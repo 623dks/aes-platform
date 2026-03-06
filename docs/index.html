@@ -248,8 +248,19 @@ document.getElementById('score-btn').addEventListener('click', async () => {
     document.getElementById('ring-progress').style.strokeDashoffset = 295;
 
     try {
-        const jsonData = { prompt_id: parseInt(promptId), essay_id: studentId, text: text || "" };
-        const response = await fetch(API_URL, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(jsonData) });
+        let response;
+        const fileInput = document.getElementById('essay-file');
+        const uploadedFile = fileInput.files[0];
+        if (uploadedFile && !text) {
+            const formData = new FormData();
+            formData.append('file', uploadedFile);
+            formData.append('prompt_id', promptId);
+            formData.append('essay_id', studentId);
+            response = await fetch(API_URL, { method: "POST", body: formData });
+        } else {
+            const jsonData = { prompt_id: parseInt(promptId), essay_id: studentId, text: text || "" };
+            response = await fetch(API_URL, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(jsonData) });
+        }
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.detail || 'Server error ' + response.status);
