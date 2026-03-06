@@ -121,11 +121,35 @@ async def score_essay(request: ScoreRequest):
         raise HTTPException(status_code=503, detail="Engine not ready.")
     if not request.text:
         raise HTTPException(status_code=400, detail="No essay text.")
+
+    # Word count guardrails
+    word_count = len(request.text.strip().split())
+
+    if word_count > 800:
+        return {"id": None, "prompt_id": request.prompt_id, "score": 0,
+                "justification": "Essay exceeds the 800-word limit ({} words). Please shorten your essay to between 350 and 700 words for accurate scoring.".format(word_count),
+                "confidence": 1.0}
+
+    if word_count < 200:
+        return {"id": None, "prompt_id": request.prompt_id, "score": 0,
+                "justification": "Essay is too short ({} words). A minimum of 200 words is required for scoring. Please expand your essay with more detail and analysis.".format(word_count),
+                "confidence": 1.0}
+
+    if word_count < 300:
+        return {"id": None, "prompt_id": request.prompt_id, "score": 1,
+                "justification": "Essay is below the recommended length ({} words). At this length, the response lacks sufficient development to score above a 1. Aim for 350-700 words.".format(word_count),
+                "confidence": 0.95}
+
     try:
         req_data = {"essay_id": request.essay_id or f"U_{random.randint(1000,9999)}", "text": request.text, "prompt_id": request.prompt_id}
         results = engine.generate_batch([req_data])
         res = results[0]
         score = res.get("score")
+
+        # Cap score at 2 for essays between 300-350 words
+        if word_count < 350 and score is not None and score > 2:
+            score = 2
+
         justification = get_real_justification(request.text, score, request.prompt_id)
         confidence = res.get("confidence", 0.9)
         db_id = f"ESSAY_{int(time.time())}_{random.randint(100,999)}"
