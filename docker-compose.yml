@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aes_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aes_user
+      POSTGRES_PASSWORD: aes_password
+      POSTGRES_DB: aes_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aes_user -d aes_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_data:

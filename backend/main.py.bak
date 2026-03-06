@@ -1,0 +1,277 @@
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+
+from fastapi.middleware.cors import CORSMiddleware
+
+from pydantic import BaseModel
+
+from typing import List, Optional
+
+import io
+
+import PyPDF2
+
+import docx
+
+import os
+
+import uvicorn
+
+import yaml
+
+import sqlite3
+
+import time
+
+import random
+
+
+
+from src.serving.multi_lora import MultiLoRAEngine
+
+
+
+app = FastAPI(title="Multi-LoRA AES API - Production Gate")
+
+
+
+DB_PATH = "deep_mare.db"
+
+engine = None
+
+
+
+class ScoreRequest(BaseModel):
+
+    essay_id: str
+
+    text: str
+
+    prompt_id: int
+
+
+
+class ScoreResponse(BaseModel):
+
+    id: str
+
+    prompt_id: int
+
+    score: int
+
+    justification: str
+
+    confidence: Optional[float] = None
+
+    
+
+class BatchScoreRequest(BaseModel):
+
+    essays: List[ScoreRequest]
+
+
+
+def init_db():
+
+    conn = sqlite3.connect(DB_PATH)
+
+    c = conn.cursor()
+
+    c.execute('''CREATE TABLE IF NOT EXISTS essays 
+
+                 (id TEXT PRIMARY KEY, prompt_id INTEGER, text TEXT, ai_score INTEGER, ai_justification TEXT, 
+
+                  is_validated INTEGER DEFAULT 0, teacher_score INTEGER, teacher_comments TEXT, created_at REAL)''')
+
+    conn.commit()
+
+    conn.close()
+
+
+
+app.add_middleware(
+
+    CORSMiddleware,
+
+    allow_origins=["*"],
+
+    allow_methods=["*"],
+
+    allow_headers=["*"],
+
+)
+
+
+
+@app.on_event("startup")
+
+async def startup_event():
+
+    global engine
+
+    init_db()
+
+    with open("config/default.yaml", "r") as f:
+
+        config = yaml.safe_load(f)
+
+    adapters_dir = config["paths"]["adapters_dir"]
+
+    base_model = config["model"]["name"]
+
+    adapters_config = {}
+
+    if os.path.exists(adapters_dir):
+
+        for dirname in os.listdir(adapters_dir):
+
+            if dirname.startswith("set_") and dirname.endswith("_llama"):
+
+                try:
+
+                    prompt_id = int(dirname.split("_")[1])
+
+                    adapters_config[prompt_id] = {
+
+                        "name": f"llama_adapter_set_{prompt_id}",
+
+                        "path": os.path.join(adapters_dir, dirname)
+
+                    }
+
+                except: continue
+
+    if adapters_config:
+
+        try:
+
+            engine = MultiLoRAEngine(base_model, adapters_config)
+
+        except Exception as e:
+
+            print(f"Engine error: {e}")
+
+
+
+def extract_text_from_file(file: UploadFile) -> str:
+
+    filename = file.filename.lower()
+
+    content = file.file.read()
+
+    if filename.endswith(".pdf"):
+
+        pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
+
+        text = ""
+
+        for page in pdf_reader.pages: text += page.extract_text() or ""
+
+        return text.strip()
+
+    elif filename.endswith(".docx") or filename.endswith(".doc"):
+
+        doc = docx.Document(io.BytesIO(content))
+
+        text = ""
+
+        for para in doc.paragraphs: text += para.text + "\n"
+
+        return text.strip()
+
+    return content.decode("utf-8", errors="ignore").strip()
+
+
+
+@app.post("/api/score")
+
+async def score_essay(
+
+    essay_id: Optional[str] = Form(None),
+
+    text: Optional[str] = Form(None),
+
+    prompt_id: int = Form(...),
+
+    file: Optional[UploadFile] = File(None)
+
+):
+
+    if engine is None: raise HTTPException(status_code=503, detail="Engine not ready")
+
+    final_text = text
+
+    if file: final_text = extract_text_from_file(file)
+
+    if not final_text: raise HTTPException(status_code=400, detail="No text")
+
+    try:
+
+        req_data = {"essay_id": essay_id or f"U_{random.randint(1000,9999)}", "text": final_text, "prompt_id": prompt_id}
+
+        results = engine.generate_batch([req_data])
+
+        res = results[0]
+
+        db_id = f"ESSAY_{int(time.time())}_{random.randint(100,999)}"
+
+        res["id"] = db_id
+
+        conn = sqlite3.connect(DB_PATH)
+
+        c = conn.cursor()
+
+        c.execute("INSERT INTO essays VALUES (?, ?, ?, ?, ?, 0, NULL, NULL, ?)", 
+
+                  (db_id, prompt_id, final_text, res["score"], res["justification"], time.time()))
+
+        conn.commit()
+
+        conn.close()
+
+        return res
+
+    except Exception as e: raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.get("/api/history")
+
+async def get_history():
+
+    conn = sqlite3.connect(DB_PATH); conn.row_factory = sqlite3.Row
+
+    c = conn.cursor(); c.execute("SELECT * FROM essays ORDER BY created_at DESC")
+
+    rows = c.fetchall(); conn.close()
+
+    return [dict(row) for row in rows]
+
+
+
+@app.post("/api/feedback")
+
+async def save_feedback(essay_id: str=Form(...), is_validated: int=Form(...), teacher_score: int=Form(...), teacher_comments: str=Form(...)):
+
+    conn = sqlite3.connect(DB_PATH); c = conn.cursor()
+
+    c.execute("UPDATE essays SET is_validated=?, teacher_score=?, teacher_comments=? WHERE id=?", (is_validated, teacher_score, teacher_comments, essay_id))
+
+    conn.commit(); conn.close()
+
+    return {"status": "success"}
+
+
+
+@app.get("/api/health")
+
+async def health_check():
+
+    return {"status": "healthy" if engine else "degraded", "db": "connected"}
+
+
+
+if __name__ == "__main__":
+
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=False)
+

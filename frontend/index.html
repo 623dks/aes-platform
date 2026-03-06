@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MARE - Multi-Adapter Rubric Evaluator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">M</div>
+      <div class="logo-text">
+        <span class="logo-title">MARE</span>
+        <span class="logo-sub">Multi-Adapter Rubric Evaluator</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="input-col">
+      <div class="section-label">01 - Configure</div>
+      <div class="field-group">
+        <label>Exam Set / Rubric</label>
+        <div class="select-wrap">
+          <select id="exam-select">
+            <option value="1">Set 1 - Persuasive Essay</option>
+            <option value="2">Set 2 - Persuasive Essay</option>
+            <option value="3">Set 3 - Source-Based Essay</option>
+            <option value="4">Set 4 - Source-Based Essay</option>
+            <option value="5">Set 5 - Persuasive Essay</option>
+            <option value="6">Set 6 - Argumentative Essay</option>
+            <option value="7">Set 7 - Expository Essay</option>
+          </select>
+          <span class="select-arrow">v</span>
+        </div>
+        <p class="hint">Loads a 17MB LoRA adapter without evicting the base model. Score range: 1-6.</p>
+      </div>
+      <div class="section-label" style="margin-top:2rem;">02 - Submit</div>
+      <div class="field-group">
+        <label>Student Essay</label>
+        <textarea id="essay-input" placeholder="Paste or type essay here..." spellcheck="false"></textarea>
+        <div class="essay-meta">
+          <span id="word-count">0 words</span>
+          <span id="char-count">0 chars</span>
+        </div>
+      </div>
+      <button id="score-btn" class="score-btn">
+        <span class="btn-inner">
+          <span class="btn-label">Evaluate Essay</span>
+          <span class="btn-icon">-></span>
+        </span>
+        <span class="btn-progress"></span>
+      </button>
+    </section>
+    <section class="output-col">
+      <div class="section-label">03 - Results</div>
+      <div id="empty-state" class="empty-state">
+        <div class="empty-grid">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <p>Submit an essay to see the AI evaluation.</p>
+      </div>
+      <div id="results" class="results hidden">
+        <div class="score-display">
+          <div class="score-number" id="score-number">-</div>
+          <div class="score-meta">
+            <div class="score-label">out of 6</div>
+            <div class="score-band" id="score-band">-</div>
+          </div>
+          <div class="score-bar-wrap">
+            <div class="score-bar" id="score-bar"></div>
+          </div>
+        </div>
+        <div class="confidence-row">
+          <span class="conf-label">Model Confidence</span>
+          <span class="conf-value" id="conf-value">-</span>
+        </div>
+        <div class="justification-block">
+          <div class="block-label">AI Justification</div>
+          <p id="justification-text"></p>
+        </div>
+        <div class="trace-block">
+          <div class="block-label">Inference Trace</div>
+          <div class="trace-grid" id="trace-grid"></div>
+        </div>
+        <div class="feedback-block">
+          <div class="block-label">Teacher Override</div>
+          <div class="feedback-row">
+            <input type="number" id="teacher-score" min="1" max="6" placeholder="Score" />
+            <input type="text" id="teacher-comments" placeholder="Comments..." />
+            <button id="feedback-btn">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    window.MARE_API_BASE = "https://34.57.115.1:8000";
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
