@@ -67,7 +67,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opa
 .file-name{font-size:.72rem;color:var(--t3);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Grade button */
-.btn-grade{width:100%;font-family:var(--fb);font-size:.95rem;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:12px;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .2s;box-shadow:0 2px 12px rgba(52,209,180,.2);animation:fadeUp .5s ease both;animation-delay:.18s}
+.btn-grade{width:100%;font-family:var(--fb);font-size:.95rem;font-weight:700;color:#000;background:#3DE8C8;border:none;border-radius:12px;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .2s;box-shadow:0 2px 12px rgba(52,209,180,.2);animation:fadeUp .5s ease both;animation-delay:.18s}
 .btn-grade:hover{background:var(--accent2);box-shadow:0 4px 20px rgba(52,209,180,.3);transform:translateY(-1px)}
 .btn-grade:active{transform:translateY(0)}
 .btn-grade:disabled{opacity:.55;cursor:not-allowed;transform:none}
@@ -161,7 +161,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opa
                     <span class="file-name" id="file-name"></span>
                 </div>
             </div>
-            <textarea id="essay-input" class="ta" placeholder="Type or paste your essay here..."></textarea>
+            <textarea id="essay-input" class="ta" placeholder="Type or paste your essay here..."></textarea><div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:.82rem;color:#8B95A5">Recommended: 350&ndash;700 words</span><span id="wc-display" style="font-size:.82rem;color:#8B95A5;font-variant-numeric:tabular-nums">0 words</span></div>
         </div>
     </div>
 
@@ -297,6 +297,7 @@ document.getElementById('score-btn').addEventListener('click', async () => {
         btn.disabled = false;
     }
 });
+document.getElementById("essay-input").addEventListener("input",function(){var w=this.value.trim()?this.value.trim().split(/\s+/).length:0;var el=document.getElementById("wc-display");el.textContent=w+" words";el.style.color=w>=350&&w<=700?"#3DE8C8":w>700?"#F59E0B":"#8B95A5";});
 </script>
 </body>
 </html>
