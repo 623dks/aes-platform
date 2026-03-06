@@ -1,25 +1,24 @@
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from groq import Groq
+import os
+
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def get_real_justification(essay_text: str, score: int, prompt_id: int) -> str:
+def get_real_justification(essay_text, score, prompt_id):
     try:
+        msg = "Essay (Category {}): {}\n\nThis essay scored {} out of 6. Give a 2-3 sentence specific justification.".format(prompt_id, essay_text[:600], score)
         chat = groq_client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             messages=[
-                {"role": "system", "content": "You are an expert essay grader. Give a 2-3 sentence specific justification for why this essay received its score. Be specific about strengths and weaknesses."},
-                {"role": "user", "content": f"Essay (Category {prompt_id}):
-{essay_text[:800]}
-
-This essay was scored {score} out of 6. Why?"}
+                {"role": "system", "content": "You are an expert essay grader. Be specific about strengths and weaknesses."},
+                {"role": "user", "content": msg}
             ],
             max_tokens=150
         )
         return chat.choices[0].message.content.strip()
     except Exception as e:
-        return f"Score {score}/6 assigned based on essay analysis."
-import os
+        return "Score {}/6 assigned based on essay analysis.".format(score)
+
 import io
 import json
 import time
@@ -32,7 +31,7 @@ import docx
 import yaml
 import asyncpg
 import uvicorn
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 class ScoreRequest(BaseModel):
@@ -42,7 +41,7 @@ class ScoreRequest(BaseModel):
 
 class FeedbackRequest(BaseModel):
     essay_id: str
-    is_validated: int
+    is_validated: bool
     teacher_score: int
     teacher_comments: str
 
@@ -84,12 +83,6 @@ def load_engine(config):
                         adapters_config[prompt_id] = {"name": dirname, "path": os.path.join(adapters_dir, dirname)}
                     except:
                         continue
-                elif dirname.startswith("exam_"):
-                    try:
-                        prompt_id = int(dirname.split("_")[1])
-                        adapters_config[prompt_id] = {"name": f"set_{prompt_id}_llama", "path": os.path.join(adapters_dir, dirname)}
-                    except:
-                        continue
         if adapters_config:
             engine = MultiLoRAEngine(base_model, adapters_config)
             print(f"Engine loaded with {len(adapters_config)} adapters.")
@@ -116,22 +109,11 @@ async def lifespan(app):
 app = FastAPI(title="Multi-LoRA AES API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://623dks.github.io"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-def extract_text_from_file(file):
-    filename = file.filename.lower()
-    content = file.file.read()
-    if filename.endswith(".pdf"):
-        reader = PyPDF2.PdfReader(io.BytesIO(content))
-        return "".join(p.extract_text() or "" for p in reader.pages).strip()
-    elif filename.endswith((".docx", ".doc")):
-        doc = docx.Document(io.BytesIO(content))
-        return "\n".join(p.text for p in doc.paragraphs).strip()
-    return content.decode("utf-8", errors="ignore").strip()
 
 @app.post("/api/score")
 async def score_essay(request: ScoreRequest):
@@ -143,14 +125,16 @@ async def score_essay(request: ScoreRequest):
         req_data = {"essay_id": request.essay_id or f"U_{random.randint(1000,9999)}", "text": request.text, "prompt_id": request.prompt_id}
         results = engine.generate_batch([req_data])
         res = results[0]
+        score = res.get("score")
+        justification = get_real_justification(request.text, score, request.prompt_id)
+        confidence = res.get("confidence", 0.9)
         db_id = f"ESSAY_{int(time.time())}_{random.randint(100,999)}"
         async with db_pool.acquire() as conn:
             await conn.execute(
                 "INSERT INTO essays (id,prompt_id,text,ai_score,ai_justification,ai_confidence,is_validated,teacher_score,teacher_comments,created_at) VALUES ($1,$2,$3,$4,$5,$6,0,NULL,NULL,$7)",
-                db_id, request.prompt_id, request.text, res.get("score"), res.get("justification"), res.get("confidence"), time.time()
+                db_id, request.prompt_id, request.text, score, justification, confidence, time.time()
             )
-        real_justification = get_real_justification(request.text, res.get("score"), request.prompt_id)
-        return {"id": db_id, "prompt_id": request.prompt_id, "score": res.get("score"), "justification": real_justification, "confidence": res.get("confidence", 0.92)}
+        return {"id": db_id, "prompt_id": request.prompt_id, "score": score, "justification": justification, "confidence": confidence}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
