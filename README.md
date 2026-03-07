@@ -254,3 +254,24 @@ The teacher portal tracks live QWK as reviewers submit feedback, giving a contin
 
 Built by [Deep Shukla](https://www.linkedin.com/in/deep-shukla-b4035220a/)  
 University of Colorado | deep.shukla@colorado.edu
+
+---
+
+## Model Performance
+
+Average QWK across all prompt types: **0.633** | Average Adjacent Agreement: **87%**
+
+All prompt adapters trained for 5 epochs using QLoRA (rank 16, bfloat16) on the ASAP dataset. Evaluated on a 20-essay held-out sample per prompt. QWK (Quadratic Weighted Kappa) is the primary metric used in standardized assessment scoring, where a score above 0.60 is considered acceptable for deployment and above 0.70 is considered strong.
+
+| Prompt Type | QWK | MAE | Exact Match | Adjacent Agreement |
+|-------------|-----|-----|-------------|-------------------|
+| Persuasive / Argumentative | 0.727 | 0.60 | 45% | 95% |
+| Source-Based / Evidence | 0.665 | 0.65 | 45% | 90% |
+| Informative / Explanatory | 0.607 | 0.80 | 35% | 85% |
+| Narrative / Creative | 0.571 | 0.85 | 30% | 85% |
+| Analytical / Critical | 0.740 | 0.55 | 50% | 95% |
+| Descriptive / Observational | 0.413 | 1.05 | 20% | 75% |
+| Compare and Contrast | 0.705 | 0.75 | 40% | 85% |
+| **Average** | **0.633** | **0.75** | **38%** | **87%** |
+
+Prompt 6 (Descriptive / Observational) underperforms relative to other categories and is flagged for adapter retraining. All other prompts exceed the zero-shot GPT-4 baseline of QWK 0.46 reported in the literature.
