@@ -187,3 +187,24 @@ async def health_check():
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=False)
+
+@app.post("/api/score-file")
+async def score_file(file: UploadFile = File(...), prompt_id: int = Form(...), essay_id: str = Form(None)):
+    if engine is None:
+        raise HTTPException(status_code=503, detail="Engine not ready.")
+    text = extract_text_from_file(file)
+    if not text:
+        raise HTTPException(status_code=400, detail="Could not extract text from file.")
+    req_data = {"essay_id": essay_id or f"U_{random.randint(1000,9999)}", "text": text, "prompt_id": prompt_id}
+    results = engine.generate_batch([req_data])
+    res = results[0]
+    score = res.get("score")
+    justification = get_real_justification(text, score, prompt_id)
+    confidence = res.get("confidence", 0.9)
+    db_id = f"ESSAY_{int(time.time())}_{random.randint(100,999)}"
+    async with db_pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO essays (id,prompt_id,text,ai_score,ai_justification,ai_confidence,is_validated,teacher_score,teacher_comments,created_at) VALUES ($1,$2,$3,$4,$5,$6,0,NULL,NULL,$7)",
+            db_id, prompt_id, text, score, justification, confidence, time.time()
+        )
+    return {"id": db_id, "prompt_id": prompt_id, "score": score, "justification": justification, "confidence": confidence}

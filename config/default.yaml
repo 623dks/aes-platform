@@ -59,6 +59,6 @@ serving:
 
 paths:
   output_dir: "outputs"
-  adapters_dir: "outputs/adapters"
+  adapters_dir: "/home/g623dks/outputs/adapters"
   results_dir: "outputs/results"
   logs_dir: "outputs/logs"

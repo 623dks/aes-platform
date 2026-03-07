@@ -36,7 +36,7 @@ class MultiLoRAEngine:
             model=base_model_id,
             enable_lora=True,
             max_loras=max_loras,
-            max_lora_rank=8,
+            max_lora_rank=16,
             max_model_len=4096,
             gpu_memory_utilization=0.90,
             # Use AWQ or GPTQ if specified, else FP16/BF16
