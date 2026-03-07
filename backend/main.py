@@ -31,7 +31,7 @@ import docx
 import yaml
 import asyncpg
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
 class ScoreRequest(BaseModel):
