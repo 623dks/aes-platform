@@ -210,13 +210,13 @@ document.getElementById('score-btn').addEventListener('click', async () => {
     const btnText = btn.querySelector('span');
     const spinner = btn.querySelector('.spinner');
     const text = document.getElementById('essay-input').value.trim();
-    const file = document.getElementById('essay-file').files[0];
+
     const promptId = parseInt(document.getElementById('prompt-select').value);
     const studentId = document.getElementById('student-id').value;
     const userName = user ? user.name : 'guest';
 
     if (!text && !file) {
-        alert('Please write an essay or upload a file first.');
+        alert('Please write an essay first.');
         return;
     }
 
