@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AES in 2026 — Deep Shukla</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Source+Serif+4:wght@400;600;700&family=Instrument+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{background:white;}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const T = {
+  blue:"#1e3a8a", blueMid:"#2563eb", blueLight:"#dbeafe",
+  green:"#166534", greenLt:"#dcfce7",
+  amber:"#92400e", amberLt:"#fef3c7",
+  red:"#991b1b", redLt:"#fee2e2",
+  purple:"#5b21b6", purpleLt:"#ede9fe",
+  teal:"#0c7b8a", tealLt:"#e2f5f7",
+  gray1:"#111827", gray2:"#1f2937", gray3:"#374151",
+  gray4:"#6b7280", gray5:"#f3f4f6", gray6:"#e5e7eb", gray7:"#9ca3af",
+};
+const F = {
+  h:"'Crimson Pro',Georgia,serif",
+  b:"'Source Serif 4',Georgia,serif",
+  u:"'Instrument Sans','Helvetica Neue',sans-serif",
+  m:"'JetBrains Mono','Courier New',monospace",
+};
+
+const Cite = ({id}) => (
+  <a href={`#ref-${id}`} style={{fontSize:"0.58rem",verticalAlign:"super",lineHeight:0,
+    color:T.blueMid,fontFamily:F.u,fontWeight:700,textDecoration:"none"}}>[{id}]</a>
+);
+const SecHead = ({n,children}) => (
+  <div style={{margin:"1.1rem 0 0.35rem",breakAfter:"avoid"}}>
+    <div style={{display:"flex",gap:"0.3rem",alignItems:"center"}}>
+      <span style={{color:T.blueMid,fontWeight:700,fontSize:"0.62rem",fontFamily:F.u}}>{n}.</span>
+      <span style={{fontSize:"0.64rem",fontWeight:700,letterSpacing:"0.09em",
+        textTransform:"uppercase",color:T.blue,fontFamily:F.u}}>{children}</span>
+    </div>
+    <div style={{height:"1.5px",background:`linear-gradient(90deg,${T.blue},transparent)`,marginTop:"2px"}}/>
+  </div>
+);
+const SubHead = ({children}) => (
+  <div style={{fontSize:"0.76rem",fontWeight:700,color:T.gray2,fontFamily:F.u,
+    margin:"0.65rem 0 0.2rem",paddingLeft:"0.4rem",
+    borderLeft:`2.5px solid ${T.blueMid}`}}>{children}</div>
+);
+const P = ({children,style}) => (
+  <p style={{fontFamily:F.b,fontSize:"0.8rem",lineHeight:"1.58",marginBottom:"0.4rem",
+    textAlign:"justify",color:T.gray1,hyphens:"auto",...style}}>{children}</p>
+);
+const Bul = ({items}) => (
+  <ul style={{listStyle:"none",padding:0,margin:"0.2rem 0 0.4rem"}}>
+    {items.map((it,i)=>(
+      <li key={i} style={{display:"flex",gap:"0.35rem",fontSize:"0.78rem",fontFamily:F.b,
+        lineHeight:"1.48",padding:"0.15rem 0",borderBottom:`1px solid ${T.gray5}`,color:T.gray2}}>
+        <span style={{color:T.blueMid,flexShrink:0,marginTop:"0.18rem",fontSize:"0.5rem"}}>&#9656;</span>
+        <span>{it}</span>
+      </li>
+    ))}
+  </ul>
+);
+const Box = ({label,color="amber",children}) => {
+  const s={amber:{bg:T.amberLt,bd:"#d97706",lbl:T.amber},red:{bg:T.redLt,bd:"#ef4444",lbl:T.red},
+    green:{bg:T.greenLt,bd:"#16a34a",lbl:T.green},blue:{bg:"#eff6ff",bd:T.blueMid,lbl:T.blue},
+    purple:{bg:T.purpleLt,bd:"#8b5cf6",lbl:T.purple}}[color];
+  return (
+    <div style={{background:s.bg,borderLeft:`2.5px solid ${s.bd}`,borderRadius:"0 4px 4px 0",
+      padding:"0.45rem 0.7rem",margin:"0.45rem 0",fontSize:"0.76rem",lineHeight:"1.52"}}>
+      {label&&<div style={{fontFamily:F.u,fontSize:"0.58rem",fontWeight:700,
+        textTransform:"uppercase",letterSpacing:"0.07em",color:s.lbl,marginBottom:"0.2rem"}}>{label}</div>}
+      <div style={{color:T.gray2}}>{children}</div>
+    </div>
+  );
+};
+const MathBlock = ({children}) => (
+  <div style={{fontFamily:F.m,fontSize:"0.7rem",background:"#f8fafc",
+    borderLeft:`2px solid ${T.gray6}`,padding:"0.4rem 0.7rem",margin:"0.35rem 0",
+    borderRadius:"0 3px 3px 0",overflowX:"auto",lineHeight:"1.7",color:T.gray3}}>{children}</div>
+);
+const Mono = ({children}) => (
+  <code style={{fontFamily:F.m,fontSize:"0.7rem",background:T.gray5,padding:"0.08rem 0.25rem",borderRadius:"2px"}}>{children}</code>
+);
+const RefEntry = ({id,children}) => (
+  <div id={`ref-${id}`} style={{display:"flex",gap:"0.35rem",padding:"0.2rem 0",
+    borderBottom:`1px solid ${T.gray5}`,alignItems:"flex-start"}}>
+    <span style={{color:T.blueMid,fontWeight:700,fontSize:"0.6rem",fontFamily:F.u,
+      flexShrink:0,width:"1.4rem"}}>[{id}]</span>
+    <span style={{fontSize:"0.64rem",color:T.gray4,fontFamily:F.u,lineHeight:"1.4"}}>{children}</span>
+  </div>
+);
+const FullFig = ({n,title,children,caption}) => (
+  <div style={{columnSpan:"all",margin:"0.8rem 0",background:"white",
+    border:`1px solid ${T.gray6}`,borderRadius:"6px",overflow:"hidden",
+    boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+    <div style={{display:"flex",alignItems:"baseline",gap:"0.4rem",
+      padding:"0.5rem 0.85rem",borderBottom:`1px solid ${T.gray6}`,background:T.gray5}}>
+      <span style={{fontFamily:F.u,fontSize:"0.55rem",fontWeight:800,letterSpacing:"0.08em",
+        textTransform:"uppercase",color:T.blue}}>Fig. {n}</span>
+      <span style={{fontFamily:F.u,fontSize:"0.66rem",fontWeight:600,color:T.gray3}}>{title}</span>
+    </div>
+    <div style={{padding:"0.6rem 0.85rem"}}>{children}</div>
+    {caption&&<div style={{padding:"0.4rem 0.85rem",borderTop:`1px solid ${T.gray6}`,
+      background:T.gray5,fontFamily:F.u,fontSize:"0.6rem",color:T.gray4,lineHeight:"1.45"}}>{caption}</div>}
+  </div>
+);
+
+function Fig1() {
+  const rows = [
+    {name:"LSA / IEA",sub:"Landauer & Foltz",c:"#7c3aed",qwk:0.72,explain:false,ferpa:true,cost:"$0.02",caps:[3,2,1,3,3]},
+    {name:"Encoder Transformer",sub:"BERT / RoBERTa / DeBERTa",c:"#1d4ed8",qwk:0.82,explain:false,ferpa:true,cost:"$0.03",caps:[1,1,1,2,2]},
+    {name:"API LLM (GPT-4)",sub:"Third-party routing",c:"#dc2626",qwk:0.85,explain:true,ferpa:false,cost:"$0.30",caps:[1,2,3,1,1]},
+    {name:"Full Fine-tune",sub:"Separate 7B per rubric",c:"#b45309",qwk:0.83,explain:false,ferpa:true,cost:"$0.15",caps:[1,1,1,2,1]},
+    {name:"PEFT / Multi-LoRA",sub:"Shared base + adapters",c:"#166534",qwk:0.80,explain:true,ferpa:true,cost:"$0.025",caps:[2,-1,3,2,1],highlight:true},
+  ];
+  const capLabels=["Interp.","Gaming","Multi-Rubric","Latency","Maturity"];
+  const Badge=({yes})=>(<span style={{fontFamily:F.u,fontSize:"0.52rem",fontWeight:700,padding:"1px 5px",borderRadius:99,background:yes?T.greenLt:T.redLt,color:yes?T.green:T.red,border:`1px solid ${yes?T.green+"44":T.red+"44"}`}}>{yes?"YES":"NO"}</span>);
+  const Dots=({v,c})=>{
+    if(v===-1) return <div style={{display:"flex",gap:2,justifyContent:"center"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",border:`1px dashed ${T.amber}`,background:T.amberLt}}/>)}</div>;
+    return <div style={{display:"flex",gap:2,justifyContent:"center"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:i<v?c:"transparent",border:`1.2px solid ${i<v?c:T.gray6}`,opacity:i<v?(0.45+i*0.28):0.3}}/>)}</div>;
+  };
+  return (
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"separate",borderSpacing:0,fontFamily:F.u,fontSize:"0.64rem"}}>
+        <thead><tr style={{background:T.gray1}}>
+          {["Architecture","QWK","Expl.","FERPA","$/Essay",...capLabels].map((h,i)=>(
+            <th key={h} style={{padding:"6px 5px",color:T.gray7,fontSize:"0.54rem",fontWeight:700,letterSpacing:"0.06em",textAlign:i===0?"left":"center",whiteSpace:"nowrap",borderBottom:`2px solid ${T.blue}`}}>{h}</th>
+          ))}
+        </tr></thead>
+        <tbody>{rows.map((r,ri)=>(
+          <tr key={ri} style={{background:r.highlight?`${r.c}06`:ri%2?T.gray5:"white",borderLeft:r.highlight?`3px solid ${r.c}`:"3px solid transparent"}}>
+            <td style={{padding:"6px 5px",borderBottom:`1px solid ${T.gray6}`,minWidth:130}}>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                {r.highlight&&<span style={{fontSize:"0.45rem",fontWeight:800,color:"white",background:r.c,padding:"0px 4px",borderRadius:2,letterSpacing:"0.05em"}}>PROPOSED</span>}
+                <span style={{fontWeight:700,color:r.c,fontSize:"0.68rem"}}>{r.name}</span>
+              </div>
+              <div style={{fontSize:"0.54rem",color:T.gray7,marginTop:1}}>{r.sub}</div>
+            </td>
+            <td style={{padding:"6px 4px",borderBottom:`1px solid ${T.gray6}`,width:90}}>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{flex:1,height:6,background:T.gray6,borderRadius:3,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${((r.qwk-0.6)/0.3)*100}%`,background:`linear-gradient(90deg,${r.c}66,${r.c})`,borderRadius:3}}/>
+                </div>
+                <span style={{fontFamily:F.m,fontSize:"0.6rem",fontWeight:700,color:r.c,minWidth:28,textAlign:"right"}}>{r.qwk.toFixed(2)}</span>
+              </div>
+            </td>
+            <td style={{padding:"6px 3px",textAlign:"center",borderBottom:`1px solid ${T.gray6}`}}><Badge yes={r.explain}/></td>
+            <td style={{padding:"6px 3px",textAlign:"center",borderBottom:`1px solid ${T.gray6}`}}><Badge yes={r.ferpa}/></td>
+            <td style={{padding:"6px 3px",textAlign:"center",borderBottom:`1px solid ${T.gray6}`,fontFamily:F.m,fontWeight:700,fontSize:"0.6rem",color:r.c}}>{r.cost}</td>
+            {r.caps.map((v,ci)=>(<td key={ci} style={{padding:"6px 3px",textAlign:"center",borderBottom:`1px solid ${T.gray6}`}}><Dots v={v} c={r.c}/></td>))}
+          </tr>
+        ))}</tbody>
+      </table>
+      <div style={{display:"flex",gap:"1rem",padding:"5px 0",flexWrap:"wrap",fontFamily:F.u,fontSize:"0.54rem",color:T.gray7}}>
+        <span style={{display:"flex",alignItems:"center",gap:3}}>{[0.3,0.6,1].map((o,i)=><span key={i} style={{width:6,height:6,borderRadius:"50%",background:T.gray3,opacity:o}}/>)}&nbsp;absent → strong</span>
+        <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:"50%",border:`1px dashed ${T.amber}`,background:T.amberLt}}/> no published eval</span>
+        <span style={{marginLeft:"auto",fontStyle:"italic"}}>* informal | ** projected | QWK 0.60-0.90</span>
+      </div>
+    </div>
+  );
+}
+
+function Fig2() {
+  const cards = [
+    {n:"01",t:"LLM-Generated Essays",c:T.red,b:"65% of students use generative AI. Binary detectors flag AAVE at 34% higher rates than SAE.",s:"EDM 2025: 0.34-pt penalty for AAVE features"},
+    {n:"02",t:"Demographic Bias",c:T.purple,b:"QWK gaps: -0.09 (White/Black), -0.12 (Native/ESL). Gaps persist in validated systems.",s:"Contrastive learning: 39.9% bias reduction"},
+    {n:"03",t:"Regulatory Compliance",c:T.blue,b:"EU AI Act: mandatory transparency docs, rights assessments. FERPA: students must challenge decisions.",s:"Pearson VUE FedRAMP authorized Jan 2025"},
+    {n:"04",t:"Multi-Rubric Scale",c:T.amber,b:"50+ exam types needing separate training, validation, bias audit. Full FT: 700 GB for 50 models.",s:"Per-rubric overhead is the defining constraint"},
+    {n:"05",t:"Justification Faithfulness",c:T.green,b:"Plausible explanations are not faithful ones. Models produce post-hoc rationalizations.",s:"No standardized evaluation protocol exists"},
+    {n:"06",t:"Confidence Calibration",c:T.teal,b:"Confident high scores on gaming responses are dangerous. Platt scaling fails on distribution shift.",s:"Conformal prediction: distribution-free guarantees"},
+  ];
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.5rem"}}>
+      {cards.map(c=>(
+        <div key={c.n} style={{borderRadius:"5px",overflow:"hidden",border:`1px solid ${c.c}22`,background:"white"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"0.3rem",padding:"0.35rem 0.55rem",background:`${c.c}0a`,borderBottom:`2px solid ${c.c}`}}>
+            <span style={{fontFamily:F.m,fontSize:"0.7rem",fontWeight:800,color:c.c,opacity:0.4}}>{c.n}</span>
+            <span style={{fontFamily:F.u,fontSize:"0.65rem",fontWeight:700,color:c.c}}>{c.t}</span>
+          </div>
+          <div style={{padding:"0.4rem 0.55rem"}}>
+            <div style={{fontFamily:F.u,fontSize:"0.62rem",lineHeight:"1.48",color:T.gray3,marginBottom:"0.25rem"}}>{c.b}</div>
+            <div style={{fontFamily:F.u,fontSize:"0.55rem",color:c.c,fontWeight:600,fontStyle:"italic",borderTop:`1px dashed ${c.c}33`,paddingTop:"0.2rem"}}>{c.s}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Fig3() {
+  const Panel=({title,items,unit,max,note})=>(
+    <div style={{flex:"1 1 0",minWidth:0}}>
+      <div style={{fontFamily:F.u,fontSize:"0.57rem",fontWeight:700,color:T.gray3,letterSpacing:"0.06em",
+        textTransform:"uppercase",marginBottom:"7px",paddingBottom:"3px",
+        borderBottom:`1.5px solid ${T.gray1}`}}>{title}</div>
+      {items.map(m=>(
+        <div key={m.l} style={{marginBottom:"5px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"2px",gap:"0.3rem"}}>
+            <span style={{fontFamily:F.u,fontSize:"0.57rem",color:T.gray3,lineHeight:"1.2",flexShrink:1,minWidth:0}}>{m.l}</span>
+            <span style={{fontFamily:F.m,fontSize:"0.6rem",fontWeight:700,color:m.c,flexShrink:0,whiteSpace:"nowrap"}}>{m.v.toLocaleString()}{unit}</span>
+          </div>
+          <div style={{height:7,background:T.gray5,borderRadius:4,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${Math.max((m.v/max)*100,1.5)}%`,
+              background:`linear-gradient(90deg,${m.c}55,${m.c})`,borderRadius:4}}/>
+          </div>
+        </div>
+      ))}
+      {note&&<div style={{fontFamily:F.u,fontSize:"0.51rem",color:T.gray7,fontStyle:"italic",
+        marginTop:"5px",lineHeight:"1.35"}}>{note}</div>}
+    </div>
+  );
+  return (
+    <div style={{display:"flex",flexDirection:"row",flexWrap:"nowrap",gap:"1.4rem",alignItems:"flex-start"}}>
+      <Panel title="GPU Memory: 50-Rubric Deploy" max={700} unit=" GB"
+        items={[{l:"50× Llama-8B (FP16)",v:700,c:T.red},{l:"50× BERT/DeBERTa",v:23.4,c:T.blue},{l:"Llama-8B (AWQ) + 50 LoRA",v:6,c:T.green}]}
+        note="AWQ INT4: 14 GB → 3.5 GB at −0.02 QWK"/>
+      <div style={{width:"1px",background:T.gray6,alignSelf:"stretch",flexShrink:0}}/>
+      <Panel title="Latency per Essay (A100)" max={3000} unit=" ms"
+        items={[{l:"Classical feature-based",v:18,c:T.green},{l:"DeBERTa encoder",v:120,c:T.blue},{l:"PEFT/LoRA + vLLM",v:420,c:T.amber},{l:"GPT-4 API (w/ network)",v:2800,c:T.red}]}
+        note="vLLM PagedAttention: 2.3× throughput"/>
+      <div style={{width:"1px",background:T.gray6,alignSelf:"stretch",flexShrink:0}}/>
+      <Panel title="Annual Cost at 24M Essays" max={400} unit="k$/yr"
+        items={[{l:"GPT-4 API",v:360,c:T.red},{l:"Full fine-tune/rubric",v:210,c:T.amber},{l:"Current IEA/LSA",v:48,c:T.gray4},{l:"PEFT/Multi-LoRA",v:38,c:T.green}]}
+        note="GPT-4: $0.03/1k tok × 24M × 500 words"/>
+    </div>
+  );
+}
+
+function Fig4() {
+  return (
+    <svg viewBox="0 0 920 360" style={{width:"100%",display:"block"}} xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a1" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><path d="M0,0 L0,5 L7,2.5z" fill={T.gray3}/></marker>
+        <marker id="a2" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><path d="M0,0 L0,5 L7,2.5z" fill={T.gray7}/></marker>
+        <marker id="a3" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><path d="M0,0 L0,5 L7,2.5z" fill={T.purple}/></marker>
+      </defs>
+      {[[4,24,146,305,"#eef2ff",T.blue,"INGESTION &","SCREENING"],[158,24,208,305,"#f0fdf4",T.green,"SCORING","CORE"],[374,24,222,305,"#fffbeb",T.amber,"PSYCHOMETRIC","LAYERS"],[604,24,140,305,"#fff1f2",T.red,"OUTPUTS",""],[752,24,164,305,"#faf5ff",T.purple,"MONITORING",""]].map(([x,y,w,h,bg,bd,l1,l2],i)=>(
+        <g key={i}><rect x={x} y={y} width={w} height={h} rx="6" fill={bg} stroke={bd} strokeWidth="0.6" strokeOpacity="0.25"/>
+        <text x={x+w/2} y={y-8} fill={bd} fontSize="6.5" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif" letterSpacing="0.08em">{l1}</text>
+        {l2&&<text x={x+w/2} y={y} fill={bd} fontSize="6.5" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif" letterSpacing="0.08em">{l2}</text>}</g>
+      ))}
+      {[[12,38,T.blue,"Essay Input","raw text . BPE . max 2048"],[12,96,T.purple,"Rubric Config","criteria . weights . rubric_id"],[12,154,T.teal,"Semantic Screen","coherence scoring (not binary)"],[12,226,T.red,"Fairness Gate","ELL / AAVE flag > audit path"]].map(([x,y,c,t,s])=>(
+        <g key={t}><rect x={x} y={y} width="130" height="44" rx="4" fill="white" stroke={c} strokeWidth="1.2"/>
+        <line x1={x} y1={y+4} x2={x} y2={y+40} stroke={c} strokeWidth="3" strokeLinecap="round"/>
+        <text x={x+70} y={y+17} fill={c} fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{t}</text>
+        <text x={x+70} y={y+31} fill={T.gray4} fontSize="6.5" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{s}</text></g>
+      ))}
+      {[[142,60,166,165],[142,118,166,168],[142,176,166,172],[142,248,166,228]].map(([x1,y1,x2,y2],i)=>(
+        <line key={`ic${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={T.gray3} strokeWidth="0.8" strokeOpacity="0.5" markerEnd="url(#a1)"/>
+      ))}
+      <rect x="166" y="134" width="192" height="56" rx="5" fill="#f0fdf4" stroke={T.green} strokeWidth="1.8"/>
+      <text x="262" y="154" fill={T.green} fontSize="9.5" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">Shared Base Model</text>
+      <text x="262" y="168" fill={T.gray3} fontSize="7" textAnchor="middle" fontFamily="JetBrains Mono,monospace">Llama-3.1-8B . AWQ INT4 . 3.5 GB</text>
+      <text x="262" y="180" fill={T.gray7} fontSize="6.5" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">frozen weights . Apache 2.0 . loaded once</text>
+      {[["A","Arg. r=16",168,206],["B","Narr. r=16",258,206],["C","Sci. r=8",168,250],["N","Custom r=8",258,250]].map(([id,s,x,y])=>(
+        <g key={id}><rect x={x} y={y} width="80" height="34" rx="3" fill={T.amberLt} stroke={T.amber} strokeWidth="0.9"/>
+        <text x={x+40} y={y+13} fill={T.amber} fontSize="7.5" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">Adapter {id}</text>
+        <text x={x+40} y={y+25} fill={T.gray7} fontSize="6.2" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{s}</text></g>
+      ))}
+      {[[208,206],[298,206],[208,250],[298,250]].map(([tx,ty],i)=>(
+        <line key={`la${i}`} x1="262" y1="190" x2={tx} y2={ty} stroke={T.amber} strokeWidth="0.7" strokeDasharray="3,2.5"/>
+      ))}
+      <text x="262" y="302" fill={T.amber} fontSize="6.2" fontStyle="italic" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">rubric_id adapter hot-swap . vLLM multi-LoRA</text>
+      {[[358,160,382,96],[358,165,382,195],[358,170,382,278]].map(([x1,y1,x2,y2],i)=>(
+        <line key={`cp${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={T.gray3} strokeWidth="0.8" strokeOpacity="0.5" markerEnd="url(#a1)"/>
+      ))}
+      {[[382,66,T.green,"Confidence Module","log-prob . Platt . conformal","conf < 0.85 human review"],[382,164,T.red,"Bias Audit Layer","DFF . SMD per adapter per demo","-0.09 W/B . -0.12 Nat/ESL"],[382,262,T.blue,"Score + Explainer","regression head rubric scale + CI","{score, justification, conf}"]].map(([x,y,c,t,s1,s2])=>(
+        <g key={t}><rect x={x} y={y} width="206" height="62" rx="4" fill="white" stroke={c} strokeWidth="1.2"/>
+        <line x1={x} y1={y+4} x2={x} y2={y+58} stroke={c} strokeWidth="3" strokeLinecap="round"/>
+        <text x={x+107} y={y+17} fill={c} fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{t}</text>
+        <text x={x+107} y={y+33} fill={T.gray3} fontSize="6.8" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{s1}</text>
+        <text x={x+107} y={y+48} fill={T.gray7} fontSize="6.2" textAnchor="middle" fontFamily="JetBrains Mono,monospace">{s2}</text></g>
+      ))}
+      {[[588,97,612,82],[588,195,612,160],[588,293,612,238],[588,293,612,304]].map(([x1,y1,x2,y2],i)=>(
+        <line key={`po${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={T.gray3} strokeWidth="0.8" strokeOpacity="0.5" markerEnd="url(#a1)"/>
+      ))}
+      {[[612,58,T.blue,"Holistic Score","rubric pts + CI"],[612,124,T.purple,"Trait Scores","ideas . org . voice . conv."],[612,190,T.green,"NL Justification","FERPA . audit trail"],[612,280,T.red,"Human Queue","low-conf . AAVE-flagged"]].map(([x,y,c,t,s])=>(
+        <g key={t}><rect x={x} y={y} width="124" height="44" rx="4" fill="white" stroke={c} strokeWidth="1"/>
+        <line x1={x+120} y1={y+4} x2={x+120} y2={y+40} stroke={c} strokeWidth="3" strokeLinecap="round"/>
+        <text x={x+62} y={y+17} fill={c} fontSize="7.5" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{t}</text>
+        <text x={x+62} y={y+32} fill={T.gray4} fontSize="6.5" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">{s}</text></g>
+      ))}
+      <rect x="760" y="42" width="150" height="274" rx="5" fill="white" stroke={T.purple} strokeWidth="1"/>
+      <rect x="760" y="42" width="150" height="24" rx="5" fill={T.purpleLt}/>
+      <rect x="760" y="60" width="150" height="6" rx="0" fill="white"/>
+      <text x="835" y="58" fill={T.purple} fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">Ops Dashboard</text>
+      {["QWK per adapter","SMD drift alerts","ELL score gap","AAVE flag rate","Gaming incidents","Latency P95","FedRAMP audit log","Adapter versions"].map((t,i)=>(
+        <g key={t}><rect x="768" y={72+i*28} width="134" height="22" rx="3" fill={i%2?T.gray5:"white"} stroke={T.gray6} strokeWidth="0.5"/>
+        <circle cx="778" cy={83+i*28} r="2.5" fill={T.purple} opacity={0.3+i*0.08}/>
+        <text x="786" y={87+i*28} fill={T.gray3} fontSize="6.5" fontFamily="Instrument Sans,sans-serif">{t}</text></g>
+      ))}
+      {[80,146,212,302].map((y,i)=>(
+        <line key={`om${i}`} x1="736" y1={y} x2="760" y2={179} stroke={T.purple} strokeWidth="0.6" strokeOpacity="0.35" strokeDasharray="3,2.5" markerEnd="url(#a3)"/>
+      ))}
+      <path d="M 790 340 C 580 370 380 370 262 340" fill="none" stroke={T.gray7} strokeWidth="1" strokeDasharray="5,3" markerEnd="url(#a2)"/>
+      <text x="520" y="362" fill={T.gray7} fontSize="6.5" fontStyle="italic" textAnchor="middle" fontFamily="Instrument Sans,sans-serif">adapter-level retraining loop . no full base model revalidation required</text>
+    </svg>
+  );
+}
+
+function Paper() {
+  return (
+    <div style={{background:"white",minHeight:"100vh",fontFamily:F.b}}>
+      <div style={{maxWidth:"1060px",margin:"0 auto",padding:"1.8rem 1.8rem 4rem"}}>
+        <div style={{textAlign:"center",paddingBottom:"0.8rem",borderBottom:`2px solid ${T.blue}`,marginBottom:"0.9rem"}}>
+          <h1 style={{fontFamily:F.h,fontSize:"1.5rem",fontWeight:700,color:T.blue,lineHeight:1.22,marginBottom:"0.6rem"}}>
+            Automated Essay Scoring in 2026:<br/>Operational Realities, Fairness Failures,<br/>and the Infrastructure Case for Parameter-Efficient Architectures
+          </h1>
+          <div style={{display:"flex",justifyContent:"center",gap:"1.2rem",fontSize:"0.82rem",color:T.gray4,fontFamily:F.u,flexWrap:"wrap"}}>
+            <strong style={{color:T.gray2}}>Deep Shukla</strong>
+            <span>MS Data Science · University of Colorado Boulder</span>
+          </div>
+        </div>
+
+        <div style={{background:"#eff6ff",borderLeft:`4px solid ${T.blue}`,padding:"0.75rem 1rem",marginBottom:"1rem",borderRadius:"0 4px 4px 0"}}>
+          <div style={{fontSize:"0.58rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",color:T.blue,fontFamily:F.u,marginBottom:"0.3rem"}}>Abstract</div>
+          <p style={{fontSize:"0.8rem",lineHeight:"1.6",color:T.gray2,margin:0,fontFamily:F.b}}>
+            Automated essay scoring (AES) has been operationally deployed in high-stakes assessment for over two decades, yet 2026 presents a qualitatively harder set of requirements than any prior period. Three forces converge simultaneously: the EU AI Act's high-risk classification of educational AI demanding transparency documentation and rights impact assessments; documented demographic scoring disparities (QWK gaps of −0.09 White/Black, −0.12 Native/ESL) that are increasingly indefensible under FedRAMP and emerging US state legislation; and a novel validity threat from LLM-generated essays that exposes a specific vulnerability in BERT-based coherence representations. Against this backdrop, this paper examines why current approaches — LSA-based systems like Pearson's IEA, full transformer fine-tuning, and API-based LLMs — each fail on at least one of accuracy, explainability, data sovereignty, or operational scale. Parameter-efficient fine-tuning methods, specifically adapter-based architectures serving a shared frozen base model, offer a path that addresses infrastructure scale and FERPA compliance simultaneously. This is not a solved problem: gaming robustness for generative architectures remains unevaluated, justification faithfulness lacks standardized evaluation, and per-adapter bias auditing introduces validation overhead that the field has not yet addressed systematically. These are the problems worth working on.
+          </p>
+        </div>
+
+        <div style={{columnCount:2,columnGap:"2.2rem",columnRule:`1px solid ${T.gray6}`}}>
+          <SecHead n="1">Why 2026 Is Different</SecHead>
+          <P>AES research has treated high QWK on held-out benchmark data as the primary success criterion since at least the 2012 ASAP competition.<Cite id={1}/> That framing made sense when the main question was whether automated scoring was accurate enough to trust. By 2026, that question is largely answered for single-rubric, well-resourced prompts. Fine-tuned DeBERTa systems routinely exceed QWK 0.80 on standard benchmarks.<Cite id={2}/> The field has moved on to harder problems, and the evaluation framework needs to move with it.</P>
+          <P>Lottridge's BEA 2023 keynote articulates the gap precisely: NLP researchers optimize QWK on held-out data from the same distribution as training, while educational measurement practitioners think about reliability, validity, fairness, and comparability as distinct constructs requiring distinct evidence and different study designs.<Cite id={3}/> A system that ranks first on ASAP can still fail operational deployment if it produces demographic disparities, rewards gaming strategies, or cannot explain its scores to a student filing an appeal. These are not edge cases — they are the standard requirements for any system scoring a high-stakes assessment.</P>
+          <P>Three developments specific to 2026 sharpen this further. The EU AI Act's high-risk classification creates legal obligations that did not exist at the time most current operational systems were designed. The widespread availability of capable generative AI to students introduces a validity threat that binary detection tools are actively making worse. And Pearson VUE's own FedRAMP authorization in January 2025<Cite id={4}/> raises the compliance baseline for the company's own deployed systems — including IEA.</P>
+
+          <SecHead n="2">Current Approaches and Their Failure Modes</SecHead>
+          <SubHead>LSA-based systems: the IEA problem</SubHead>
+          <P>Pearson's Intelligent Essay Assessor, based on Landauer and Foltz's latent semantic analysis framework,<Cite id={5}/> remains one of the most widely deployed AES systems in existence. Its operational validation depth is genuine — published QWK of 0.72 across diverse exam types,<Cite id={6}/> decades of psychometric evidence, and real institutional trust built through operational programs. This should not be dismissed.</P>
+          <P>What LSA cannot do is increasingly the point. Singular value decomposition of term-document matrices produces identical representations for polysemous terms regardless of context. There is no mechanism for evaluating argumentative structure, causal reasoning, or discourse coherence beyond surface vocabulary. More critically for 2026: IEA outputs a numerical score with no written justification. FERPA 34 CFR §99.31<Cite id={7}/> requires that students be able to challenge assessment decisions. The EU AI Act<Cite id={8}/> requires "meaningful information about the logic involved" in automated decisions classified as high-risk. Cosine similarity metrics alone cannot satisfy either requirement.</P>
+
+          <SubHead>Transformer encoders: accuracy without explainability</SubHead>
+          <P>Fine-tuned BERT and RoBERTa systems achieve QWK 0.78–0.83 on the ASAP benchmark,<Cite id={9}/><Cite id={10}/> substantially above LSA baselines. The accuracy improvement is real. However, encoder-only architectures produce fixed-size embeddings suitable for classification but have no generative capacity — attempts to append generation heads for explanation production degrade performance below baseline.<Cite id={11}/> SHAP-based attribution<Cite id={12}/> offers partial interpretability, but the mapping from attribution scores to human-interpretable rubric criteria is rarely clear to non-experts, and differential feature functioning (DFF) analysis — the standard psychometric tool for bias auditing — requires interpretable feature representations that gradient-based systems do not naturally provide.<Cite id={13}/></P>
+          <P>The multi-rubric scaling problem is also unsolved here. Full fine-tuning produces one model per prompt. For a program with 50+ exam types, that means 50 separately trained, validated, and monitored models. Ormerod and colleagues<Cite id={13}/> demonstrate that ensemble approaches improve accuracy further, but they add rather than reduce operational complexity.</P>
+
+          <SubHead>API-based LLMs: FERPA and cost</SubHead>
+          <P>GPT-4 achieves informal AES performance estimates around QWK 0.85 and produces natural language output in the same inference pass. The deployment problem is fundamental: routing student essays through third-party servers violates FERPA requirements prohibiting external disclosure of educational records without consent.<Cite id={7}/> At operational scale this is not a theoretical concern — 24 million essays annually at $0.03 per 1,000 tokens for 500-word essays totals $360,000 per year versus $48,000 for current IEA infrastructure.<Cite id={8}/> A 7.5× cost premium for a system that cannot be legally deployed on student data without explicit consent infrastructure that most programs do not have.</P>
+
+          <SecHead n="3">The Demographic Bias Problem</SecHead>
+          <P>Bias in AES is not a theoretical concern — it is documented and specific. Using ASAP dataset with demographic metadata, Loukina, Madnani, and Zechner<Cite id={14}/> documented QWK gaps of <strong>−0.09 (White vs. Black students)</strong> and <strong>−0.12 (Native vs. ESL students)</strong>. Lottridge and Young<Cite id={15}/> found ELL students consistently scored lower on automated scores than on human scores in a production-deployed operational system, with the gap persisting after quality controls. The causes remain incompletely understood even after investigation — a finding that should give pause to anyone assuming bias can be audited away post-hoc.</P>
+          <Box color="red" label="Key finding — Lottridge & Young 2022">ELL scoring gaps persisted in a well-validated system from an established vendor even after controlling for essay quality. Gregg, Young, and Lottridge<Cite id={16}/> state the implication clearly: fairness is a validity requirement built into model development, not a post-hoc audit.</Box>
+          <P>Hofmann, Seshadri, and Jurafsky<Cite id={17}/> found that large language models exhibit systematic dialect-based scoring disparities, with African American Vernacular English scoring lower across a range of evaluation tasks when controlling for content. A 2025 EDM study by Ocumpaugh et al.<Cite id={18}/> documented a 0.34-point penalty on a 4-point scale for AAVE-dialect features. These findings have a direct implication for any AES system built on transformer or LLM foundations: the bias is not an artifact of LSA's limited representation — it reproduces in the more powerful architectures proposed to replace it.</P>
+          <P>The AI-detection problem compounds this. Binary detectors (GPTZero, Turnitin) flag AAVE-dialect essays as AI-generated at rates 34% higher than Standard American English,<Cite id={18}/> while 65% of college students now report using generative AI for assignments (Pew Research, 2024).<Cite id={19}/> An approach that applies the same binary detector to both populations simultaneously penalizes legitimate minority-dialect writing while failing on well-prompted AI output that happens to mimic Standard American English. Semantic coherence scoring — flagging essays where low perplexity combines with high score and high topic drift for human review — avoids the demographic false-positive problem while maintaining validity against genuine AI-generated content.</P>
+
+          <SecHead n="4">Parameter-Efficient Architectures: The Infrastructure Argument</SecHead>
+          <SubHead>Why shared-base serving matters</SubHead>
+          <P>Low-Rank Adaptation<Cite id={20}/> inserts trainable rank-decomposition matrices into the attention projections of a frozen pretrained model, adapting it to a specific task with roughly 0.1–0.3% of the original parameter count. The published finding that LoRA matches full fine-tuning performance on most downstream NLP tasks<Cite id={20}/> is secondary to the operational implication: with LoRA, many prompt-specific adaptations share a single base model. vLLM's multi-LoRA serving<Cite id={21}/> enables concurrent inference with dynamic adapter swapping at request time.</P>
+          <P>The memory calculation makes the infrastructure case directly. With rank <Mono>r = 16</Mono> applied to attention projections in Llama-3.1-8B (hidden dimension 4096, 4 projection matrices, 32 layers):</P>
+          <MathBlock>{"adapter_params = 2 × r × d × 4 × 32\n               = 2 × 16 × 4096 × 128 ≈ 16.8M ≈ 33 MB at FP16\n\n50 adapters + AWQ INT4 base ≈ 6 GB total\n50 full Llama-8B models (FP16) ≈ 700 GB\n→ 95% GPU memory reduction"}</MathBlock>
+          <P>Activation-aware Weight Quantization (AWQ)<Cite id={22}/> compresses the base model from 14 GB (FP16) to 3.5 GB (INT4) at a QWK cost of approximately 0.02 points and a 2.1× inference speedup. Flash Attention<Cite id={23}/> removes the O(N²) memory bottleneck, enabling 2048-token essay processing versus the 512-token limit of standard attention — covering extended-response items that exceed typical limits — at 1.8× faster inference.</P>
+
+          <SubHead>What this architecture enables</SubHead>
+          <Bul items={[
+            <><strong>FERPA compliance</strong> — all inference runs on-premises or in a controlled cloud environment; no student text leaves the institution's data perimeter. GPT-4 API cannot offer this.</>,
+            <><strong>Per-rubric explainability</strong> — generative decoding produces a structured JSON response (<Mono>{"{score, justification, confidence}"}</Mono>) in the same inference pass.</>,
+            <><strong>Adapter-level validation</strong> — when a rubric updates, only the corresponding adapter requires retraining and revalidation. The base model's psychometric properties carry over.</>,
+            <><strong>Confidence-based human routing</strong> — log-probability scoring calibrated via Platt scaling routes low-confidence predictions to human review.</>,
+          ]}/>
+
+          <SubHead>LoRA in 2026: an honest framing</SubHead>
+          <P>LoRA was published in 2021 and is now standard infrastructure, not a novel contribution. More recent variants — DoRA (weight-decomposed LoRA, 2024), which separately adapts magnitude and direction components and consistently outperforms vanilla LoRA at the same parameter count — represent a natural improvement. Mixture-of-Experts architectures (Mixtral, DeepSeek-MoE) offer an alternative framing where the model itself learns to route tokens to specialized expert layers without explicit adapter management. Model merging approaches (TIES, DARE) propose consolidating many fine-tuned models into one without serving overhead. These are the active frontiers.</P>
+          <P>The contribution this paper makes is not the adapter mechanism itself — it is the framing of what the multi-rubric serving problem requires and what any PEFT-based solution must demonstrate before it can be trusted with operational deployment. The specific adapter variant is a design variable; the psychometric validation framework around it is not.</P>
+          <Box color="blue" label="On student-scale exploration">I built a working prototype of this architecture — Llama-3.1-8B with 7 QLoRA adapters, vLLM multi-LoRA serving, teacher audit portal, and continuous QWK evaluation — deployed on GCP with an NVIDIA L4 GPU. Average QWK across prompts: 0.633. Prompt 6 (Descriptive) underperforms at 0.413 and is flagged for retraining. The honest numbers and the limitations section are the point: operational AES is not a benchmark problem.<br/><br/><a href="https://623dks.github.io/aes-platform/home.html" style={{color:T.blueMid,fontFamily:F.m,fontSize:"0.72rem"}}>623dks.github.io/aes-platform</a></Box>
+
+          <SecHead n="5">The Validation Problem Nobody Has Solved</SecHead>
+          <SubHead>Gaming robustness for generative architectures</SubHead>
+          <P>Lottridge, Godek, Jafari, and Patel<Cite id={24}/> systematically tested both classical and deep learning systems against gaming strategies including word-shuffled essays, Babel text (fluent-sounding LLM-generated nonsense), and keyword-stuffed responses. The finding that matters: BERT-based systems were <em>more susceptible to Babel text than classical systems</em>, because BERT representations encode local coherence strongly and fluent nonsense can fool a model that learned fluency predicts quality.</P>
+          <P>This finding has not been extended to PEFT-tuned generative architectures. Whether LoRA fine-tuning on human-scored essays makes a generative model more or less susceptible to argument-surface gaming — essays with the structural markers of argumentation (claim sentences, evidence phrases, counter-argument patterns) but no genuine argumentative content — is an open empirical question. With 65% of students using generative AI,<Cite id={19}/> this is now the primary validity threat in any real deployment.</P>
+          <SubHead>Justification faithfulness</SubHead>
+          <P>Generating a natural language explanation in the same inference pass as a score is architecturally possible. Whether that explanation reflects the model's actual decision process — rather than being a plausible post-hoc rationalization — is a different question entirely. Lottridge, Woolf, Jafari, and Ormerod<Cite id={25}/> propose comparing generated justifications against human-annotated rubric elements that actually drove scores. No standardized evaluation protocol for this exists as of 2026.</P>
+          <SubHead>Per-adapter bias auditing</SubHead>
+          <P>In a shared-base serving architecture, DFF and SMD analyses must run per adapter independently — not just per base model. A rubric update triggers re-auditing of that adapter's demographic properties before redeployment. This is methodologically straightforward but operationally new: the validation workflow does not yet exist in the literature for adapter-level rather than model-level changes. Designing it is a concrete research contribution that would make PEFT architectures viable for operational deployment in a way they currently are not.</P>
+          <SubHead>Confidence calibration across adapter boundaries</SubHead>
+          <P>Platt scaling calibrates a model's confidence against held-out validation data from the same distribution. When a new adapter is deployed on a new rubric, the test distribution changes. Conformal prediction<Cite id={26}/> provides distribution-free coverage guarantees that do not require the test distribution to match training — a more defensible approach for an architecture where adapters are continuously added and updated. This has been explored in adjacent NLP domains but not applied systematically to AES confidence estimation.</P>
+
+          <SecHead n="6">Open Questions</SecHead>
+          <P>The problems worth working on in 2026 AES are not primarily modeling problems. They are validation, fairness, and infrastructure problems:</P>
+          <Bul items={[
+            <><strong>Gaming robustness for PEFT generative models</strong> — direct extension of Lottridge et al. [24] gaming study methodology; the most important empirical gap before any LoRA-based system can be trusted operationally</>,
+            <><strong>Adapter-level DFF/SMD validation workflows</strong> — modular psychometric validation that operates at adapter granularity without requiring full base model revalidation on rubric updates</>,
+            <><strong>Justification faithfulness evaluation</strong> — standardized methodology comparing generated explanations against annotated rubric elements [25]; currently unanswered</>,
+            <><strong>Contrastive learning for demographic fairness</strong> — training on matched essay pairs (equivalent human scores, different demographic backgrounds) to reduce –0.09 to –0.12 QWK gaps; recent work reports 39.9% reduction [27]</>,
+            <><strong>EU AI Act conformity workflows</strong> — designing the technical documentation, rights impact assessment, and audit trail infrastructure that high-risk classification under Regulation 2024/1689 [8] requires, applied specifically to adapter-level changes</>,
+          ]}/>
+
+          <FullFig n="1" title="AES approaches compared on 2026 production-relevant dimensions" caption={<><strong>Fig. 1.</strong> QWK bars scaled 0.60-0.90. Dot ratings: absent to strong (3 levels). Dashed = no published eval. * informal | ** projected from LoRA results.</>}><Fig1/></FullFig>
+          <FullFig n="2" title="Six operational challenges any 2026 AES deployment must address"><Fig2/></FullFig>
+          <FullFig n="3" title="Infrastructure trade-offs: GPU memory, latency, annual cost at scale" caption={<><strong>Fig. 3.</strong> Left: GPU memory for 50-rubric deploy. Center: per-essay latency on A100; vLLM PagedAttention 2.3× throughput. Right: annual cost at 24M essays.</>}><Fig3/></FullFig>
+          <FullFig n="4" title="Parameter-efficient multi-rubric AES pipeline: end-to-end architecture" caption={<><strong>Fig. 4.</strong> Shared Llama-3.1-8B base (AWQ INT4, 3.5 GB) loaded once; per-rubric LoRA adapters (~33 MB) hot-swapped via vLLM. Fairness Gate routes flagged essays to Bias Audit Layer independently. Outputs: structured JSON with score, CI, and NL justification. Monitoring tracks per-adapter QWK, SMD gaps, AAVE flags, gaming incidents.</>}><Fig4/></FullFig>
+        </div>
+
+        <div style={{marginTop:"1.5rem",paddingTop:"0.6rem",borderTop:`2px solid ${T.blue}`}}>
+          <div style={{fontSize:"0.6rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",color:T.blue,fontFamily:F.u,marginBottom:"0.5rem"}}>References</div>
+          <div style={{columns:2,columnGap:"1.8rem"}}>
+            <RefEntry id={1}>Shermis, M. D., et al. (2012). State of the art automated essay scoring. <em>NCME Annual Meeting.</em> <a href="https://www.kaggle.com/competitions/asap-aes" style={{color:T.blueMid}}>kaggle.com/asap-aes</a></RefEntry>
+            <RefEntry id={2}>Learning Agency Lab. (2024). <em>ASAP 2.0.</em> Kaggle. <a href="https://www.kaggle.com/competitions/learning-agency-lab-automated-essay-scoring-2" style={{color:T.blueMid}}>kaggle.com/c/asap-2</a></RefEntry>
+            <RefEntry id={3}>Lottridge, S. (2023). Building educational applications using NLP: A measurement perspective. Keynote, BEA Workshop, ACL. <a href="https://aclanthology.org/2023.bea-1.0" style={{color:T.blueMid}}>aclanthology.org/2023.bea-1</a></RefEntry>
+            <RefEntry id={4}>Pearson VUE. (January 2025). FedRAMP Authorizations. <a href="https://www.pearsonvue.com/us/en/about/news/2025/achieves-fedramp-authorizations.html" style={{color:T.blueMid}}>pearsonvue.com/fedramp-2025</a></RefEntry>
+            <RefEntry id={5}>Landauer, T. K., Laham, D., and Foltz, P. W. (2003). Automated essay scoring with the Intelligent Essay Assessor. In Shermis &amp; Burstein (Eds.), <em>Automated Essay Scoring.</em> Lawrence Erlbaum.</RefEntry>
+            <RefEntry id={6}>Foltz, P. W., et al. (2013). Implementation and applications of the IEA. In <em>Handbook of Automated Essay Evaluation.</em> Routledge.</RefEntry>
+            <RefEntry id={7}>U.S. Department of Education. (2024). FERPA. 34 CFR Part 99. <a href="https://www.ecfr.gov/current/title-34/subtitle-A/part-99" style={{color:T.blueMid}}>ecfr.gov/FERPA</a></RefEntry>
+            <RefEntry id={8}>European Parliament. (2024). Regulation (EU) 2024/1689 — AI Act. <a href="https://artificialintelligenceact.eu/" style={{color:T.blueMid}}>artificialintelligenceact.eu</a></RefEntry>
+            <RefEntry id={9}>Mayfield, E., and Black, A. W. (2020). Should You Fine-Tune BERT for AES? <em>BEA Workshop,</em> 151–162. <a href="https://aclanthology.org/2020.bea-1.15/" style={{color:T.blueMid}}>aclanthology.org/2020.bea-1.15</a></RefEntry>
+            <RefEntry id={10}>Kumar, V., Boulanger, D., and Rose, K. (2022). Automated essay scoring using transformers. <em>arXiv:2210.12809.</em> <a href="https://arxiv.org/abs/2210.12809" style={{color:T.blueMid}}>arxiv.org/abs/2210.12809</a></RefEntry>
+            <RefEntry id={11}>Rodriguez, P. U., Jafari, A., and Ormerod, C. M. (2020). Language models and AES. <em>arXiv:2012.13779.</em> <a href="https://arxiv.org/abs/2012.13779" style={{color:T.blueMid}}>arxiv.org/abs/2012.13779</a></RefEntry>
+            <RefEntry id={12}>Lundberg, S., and Lee, S.-I. (2017). A unified approach to interpreting model predictions. <em>NeurIPS,</em> 4765–4774. <a href="https://arxiv.org/abs/1705.07874" style={{color:T.blueMid}}>arxiv.org/abs/1705.07874</a></RefEntry>
+            <RefEntry id={13}>Ormerod, C., Lottridge, S., et al. (2022). Automated short answer scoring using an ensemble of neural networks and LSA. Technical Report, Cambium Assessment.</RefEntry>
+            <RefEntry id={14}>Loukina, A., Madnani, N., and Zechner, K. (2019). Algorithmic fairness in educational applications. <em>BEA Workshop,</em> 1–10. <a href="https://aclanthology.org/W19-4401/" style={{color:T.blueMid}}>aclanthology.org/W19-4401</a></RefEntry>
+            <RefEntry id={15}>Lottridge, S., and Young, M. (2022). Examining bias in automated scoring of reading comprehension items. <em>NCME Annual Meeting,</em> San Diego.</RefEntry>
+            <RefEntry id={16}>Gregg, N., Young, M., and Lottridge, S. (2021). Examining fairness in automated scoring. <em>NCME Annual Meeting,</em> Online.</RefEntry>
+            <RefEntry id={17}>Hofmann, V., Seshadri, P., and Jurafsky, D. (2024). Dialect prejudice predicts AI decisions. <em>Nature,</em> 633, 147–154.</RefEntry>
+            <RefEntry id={18}>Ocumpaugh, J., et al. (2025). Nonstandard English and automated scoring. <em>EDM 2025,</em> 195–206. <a href="https://educationaldatamining.org/EDM2025/proceedings/2025.EDM.long-papers.195/" style={{color:T.blueMid}}>EDM 2025</a></RefEntry>
+            <RefEntry id={19}>Pew Research Center. (2024). <em>ChatGPT Usage Among College Students.</em></RefEntry>
+            <RefEntry id={20}>Hu, E. J., et al. (2022). LoRA: Low-rank adaptation of large language models. <em>ICLR.</em> <a href="https://arxiv.org/abs/2106.09685" style={{color:T.blueMid}}>arxiv.org/abs/2106.09685</a></RefEntry>
+            <RefEntry id={21}>Kwon, W., et al. (2023). Efficient memory management for LLM serving with PagedAttention. <em>SOSP,</em> 611–626. <a href="https://arxiv.org/abs/2309.06180" style={{color:T.blueMid}}>arxiv.org/abs/2309.06180</a></RefEntry>
+            <RefEntry id={22}>Lin, J., et al. (2023). AWQ: Activation-aware weight quantization. <em>arXiv:2306.00978.</em> <a href="https://arxiv.org/abs/2306.00978" style={{color:T.blueMid}}>arxiv.org/abs/2306.00978</a></RefEntry>
+            <RefEntry id={23}>Dao, T., et al. (2022). FlashAttention. <em>NeurIPS.</em> <a href="https://arxiv.org/abs/2205.14135" style={{color:T.blueMid}}>arxiv.org/abs/2205.14135</a></RefEntry>
+            <RefEntry id={24}>Lottridge, S., Godek, B., Jafari, A., and Patel, M. (2020). Comparing robustness of deep learning and classical AES to gaming strategies. <em>NCME Annual Meeting.</em></RefEntry>
+            <RefEntry id={25}>Lottridge, S., Woolf, S., Jafari, A., and Ormerod, C. (2023). The use of annotations to explain labels. <em>J. Computer Assisted Learning,</em> 39(3). <a href="https://doi.org/10.1111/jcal.12784" style={{color:T.blueMid}}>doi.org/10.1111/jcal.12784</a></RefEntry>
+            <RefEntry id={26}>Angelopoulos, A. N., and Bates, S. (2021). A gentle introduction to conformal prediction. <a href="https://arxiv.org/abs/2107.07511" style={{color:T.blueMid}}>arxiv.org/abs/2107.07511</a></RefEntry>
+            <RefEntry id={27}>Anonymous. (2026). Contrastive learning for ESL bias mitigation. <em>arXiv:2601.16724.</em> <a href="https://arxiv.org/abs/2601.16724" style={{color:T.blueMid}}>arxiv.org/abs/2601.16724</a></RefEntry>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Paper/>);
+</script>
+</body>
+</html>
