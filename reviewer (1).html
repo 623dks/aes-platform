@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Test | Teacher Audit Portal</title>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400;500;600;700&f[]=satoshi@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#070A0F;--bg2:#111620;--bg3:#1A1F2B;--bg4:#1B2030;--bg-in:#0E1219;
+  --accent:#3DE8C8;--accent2:#2AB89D;--accent-dim:rgba(61,232,200,.12);--accent-border:rgba(61,232,200,.28);
+  --green:#22C55E;--green-dim:rgba(34,197,94,.14);--green-border:rgba(34,197,94,.32);
+  --amber:#F59E0B;--amber-dim:rgba(245,158,11,.14);--amber-border:rgba(245,158,11,.32);
+  --red:#EF4444;--red-dim:rgba(239,68,68,.06);--red-border:rgba(239,68,68,.3);
+  --purple:#A855F7;--purple-dim:rgba(168,85,247,.12);--purple-border:rgba(168,85,247,.3);
+  --t1:#FFFFFF;--t2:#D0D7E0;--t3:#8B95A5;
+  --border:rgba(255,255,255,.12);
+  --fd:'Clash Display',sans-serif;--fb:'Satoshi',sans-serif;
+}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:28px 28px}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;background:rgba(7,10,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.brand{font-family:var(--fd);font-size:1.15rem;font-weight:700;color:var(--t1);text-decoration:none}
+.brand em{font-style:normal;color:var(--accent)}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:.88rem;font-weight:600;color:var(--t2);text-decoration:none;transition:color .2s}
+.back-link:hover{color:var(--accent)}
+.back-link svg{width:14px;height:14px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge{display:inline-flex;align-items:center;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:5px}
+.badge-g{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge-a{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border)}
+.badge-am{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-r{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.topbar-user{display:flex;align-items:center;gap:7px;font-size:.9rem;font-weight:600;color:var(--t2)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--green)}
+.btn-logout{font-family:var(--fb);font-size:.72rem;font-weight:600;color:var(--t3);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 9px;cursor:pointer;transition:.2s}
+.btn-logout:hover{color:var(--red);border-color:rgba(239,68,68,.2);background:var(--red-dim)}
+
+/* QWK Stats Bar */
+.stats-bar{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.25rem;display:flex;gap:2rem;flex-wrap:wrap;align-items:center;animation:fadeUp .4s ease both}
+.qwk-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:2px}
+.qwk-val{font-family:var(--fd);font-size:1.5rem;font-weight:700;color:var(--accent)}
+.qwk-sub{font-size:.72rem;color:var(--t3)}
+.stats-divider{width:1px;background:var(--border);align-self:stretch}
+
+/* Page */
+.page{max-width:1320px;margin:0 auto;padding:1.75rem 2rem 5rem;position:relative;z-index:1}
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;animation:fadeUp .4s ease both;flex-wrap:wrap;gap:.75rem}
+.page-head h1{font-family:var(--fd);font-size:1.75rem;font-weight:700;letter-spacing:-.02em}
+.stats{display:flex;gap:.6rem}
+.stat-chip{display:flex;align-items:center;gap:5px;font-size:.85rem;font-weight:600;color:var(--t2);background:var(--bg3);border:1px solid var(--border);padding:4px 11px;border-radius:999px}
+.stat-chip .n{color:var(--t1);font-variant-numeric:tabular-nums}
+
+/* Low confidence warning */
+.low-conf-banner{display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:1px solid var(--amber-border);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:var(--amber);font-weight:600}
+.low-conf-banner svg{width:14px;height:14px;flex-shrink:0}
+
+/* Appeal badge */
+.appeal-badge{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border);margin-top:4px}
+
+/* Table */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .45s ease both;animation-delay:.06s}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:980px}
+thead th{position:sticky;top:52px;background:var(--bg3);padding:13px 14px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t2);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.012)}
+td{padding:14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:.95rem;color:var(--t1)}
+tbody tr:last-child td{border-bottom:none}
+
+/* Cell styles */
+.cell-id{font-weight:700;font-variant-numeric:tabular-nums;font-size:1.05rem;color:var(--t1);margin-bottom:2px}
+.cell-prompt{font-size:.82rem;color:var(--t2);margin-bottom:5px}
+.cell-student{font-size:.72rem;color:var(--t2);margin-top:3px;word-break:break-all}
+
+.ai-score{font-family:var(--fd);font-size:1.9rem;font-weight:700;color:var(--accent);line-height:1;margin-bottom:3px}
+.ai-score small{font-size:.8rem;font-weight:500;color:var(--t3)}
+.ai-reason{font-size:.8rem;color:var(--t2);line-height:1.4;max-width:190px;margin-top:4px}
+
+/* Trait scores */
+.traits{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.trait-row{display:flex;align-items:center;gap:6px}
+.trait-name{font-size:.68rem;font-weight:600;color:var(--t3);width:90px;flex-shrink:0}
+.trait-bar{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.trait-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .6s ease}
+.trait-num{font-size:.68rem;font-weight:700;color:var(--t2);width:20px;text-align:right}
+
+/* Approve/Reject */
+.decision-area{display:flex;flex-direction:column;gap:8px;min-width:160px}
+.decision-btns{display:flex;gap:6px}
+.d-btn{font-family:var(--fb);font-size:.85rem;font-weight:600;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;transition:all .15s;flex:1;text-align:center}
+.d-btn:active{transform:scale(.96)}
+.d-btn.approve{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.d-btn.approve:hover{background:rgba(34,197,94,.16)}
+.d-btn.approve.active{background:var(--green);color:#064E3B;border-color:var(--green);box-shadow:0 2px 8px rgba(34,197,94,.25)}
+.d-btn.reject{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.d-btn.reject:hover{background:rgba(245,158,11,.14)}
+.d-btn.reject.active{background:var(--amber);color:#78350F;border-color:var(--amber);box-shadow:0 2px 8px rgba(245,158,11,.25)}
+
+/* Override score input */
+.override-box{display:none;padding:8px 10px;background:var(--bg-in);border:1px dashed var(--amber-border);border-radius:8px;animation:fadeIn .2s ease}
+.override-box.show{display:block}
+.override-label{font-size:.68rem;font-weight:600;color:var(--amber);margin-bottom:4px;display:block}
+.override-input{font-family:var(--fb);font-size:.875rem;font-weight:600;color:var(--t1);background:var(--bg);border:1px solid var(--amber-border);border-radius:6px;padding:6px 10px;width:52px;text-align:center;outline:none;transition:.2s}
+.override-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Feedback */
+.comment-area{font-family:var(--fb);font-size:.88rem;color:var(--t1);background:var(--bg-in);border:1px solid var(--border);border-radius:8px;padding:9px 11px;width:100%;min-height:66px;resize:vertical;line-height:1.5;outline:none;transition:border-color .2s}
+.comment-area::placeholder{color:var(--t3)}
+.comment-area:focus{border-color:var(--accent-border)}
+.wc{font-size:.65rem;color:var(--t3);text-align:right;margin-top:3px;font-variant-numeric:tabular-nums}
+.wc.over{color:var(--red)}
+
+/* Submit + Appeal */
+.action-btns{display:flex;flex-direction:column;gap:6px}
+.btn-submit{font-family:var(--fb);font-size:.88rem;font-weight:600;color:#000;background:var(--accent);border:none;border-radius:8px;padding:8px 14px;cursor:pointer;width:100%;white-space:nowrap;transition:all .2s;box-shadow:0 1px 4px rgba(52,209,180,.15)}
+.btn-submit:hover{background:var(--accent2);box-shadow:0 2px 10px rgba(52,209,180,.25)}
+.btn-submit:active{transform:scale(.97)}
+.btn-submit.done{background:var(--bg3);color:var(--t2);border:1px solid var(--border);box-shadow:none}
+.btn-submit.done:hover{background:var(--bg4);color:var(--t1)}
+.btn-submit.success{background:var(--green)!important;color:#064E3B!important}
+.btn-submit.error{background:var(--red)!important;color:#fff!important}
+.btn-appeal{font-family:var(--fb);font-size:.78rem;font-weight:600;color:var(--purple);background:var(--purple-dim);border:1px solid var(--purple-border);border-radius:8px;padding:6px 14px;cursor:pointer;width:100%;transition:all .2s}
+.btn-appeal:hover{background:rgba(168,85,247,.18)}
+.btn-appeal.appealed{background:var(--purple);color:#fff;border-color:var(--purple)}
+
+/* View essay button */
+.btn-read{font-family:var(--fb);font-size:.85rem;font-weight:600;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:6px;padding:5px 11px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-read:hover{background:rgba(52,209,180,.14)}
+
+/* Empty */
+.empty{text-align:center;padding:4rem 2rem;color:var(--t3)}
+.empty svg{width:44px;height:44px;margin-bottom:.75rem;opacity:.25}
+.empty p{font-size:.9rem}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:2rem}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:18px;max-width:700px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:scaleIn .25s ease}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-top{display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-top h2{font-family:var(--fd);font-size:1.05rem;font-weight:700}
+.modal-close{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--t3);transition:.15s}
+.modal-close:hover{background:var(--bg4);color:var(--t1)}
+.modal-body{padding:1.5rem;overflow-y:auto;flex:1}
+.modal-essay{font-size:1rem;line-height:1.85;color:var(--t1);white-space:pre-wrap;font-family:Georgia,serif}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:768px){
+  .page-head{flex-direction:column;align-items:flex-start}
+  .topbar{padding:0 1rem}
+  .page{padding:1.5rem 1rem 4rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="home.html" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Home
+    </a>
+    <a href="home.html" class="brand">Deep<em>Test</em></a>
+  </div>
+  <div class="topbar-right">
+    <span class="badge badge-g">Teacher</span>
+    <div class="topbar-user">
+      <div class="avatar" id="user-avatar">T</div>
+      <span id="user-display">Teacher</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Audit Queue</h1>
+    <div class="stats" id="stats">
+      <div class="stat-chip"><span class="n" id="st-total">0</span> total</div>
+      <div class="stat-chip"><span class="n" id="st-pending">0</span> pending</div>
+      <div class="stat-chip"><span class="n" id="st-done">0</span> reviewed</div>
+      <div class="stat-chip"><span class="n" id="st-appeals">0</span> appeals</div>
+    </div>
+  </div>
+
+  <!-- QWK Stats Bar -->
+  <div class="stats-bar">
+    <div>
+      <div class="qwk-title">Human-AI Agreement (QWK)</div>
+      <div class="qwk-val" id="qwk-score">—</div>
+      <div class="qwk-sub">Quadratic Weighted Kappa</div>
+    </div>
+    <div class="stats-divider"></div>
+    <div>
+      <div class="qwk-title">Avg AI Score</div>
+      <div class="qwk-val" id="avg-ai">—</div>
+      <div class="qwk-sub">out of 6</div>
+    </div>
+    <div class="stats-divider"></div>
+    <div>
+      <div class="qwk-title">Avg Human Score</div>
+      <div class="qwk-val" id="avg-human">—</div>
+      <div class="qwk-sub">out of 6</div>
+    </div>
+    <div class="stats-divider"></div>
+    <div>
+      <div class="qwk-title">Low Confidence</div>
+      <div class="qwk-val" id="low-conf-count" style="color:var(--amber)">—</div>
+      <div class="qwk-sub">need human review</div>
+    </div>
+    <div class="stats-divider"></div>
+    <div>
+      <div class="qwk-title">Open Appeals</div>
+      <div class="qwk-val" id="open-appeals" style="color:var(--purple)">—</div>
+      <div class="qwk-sub">student requests</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:12%">Submission</th>
+            <th style="width:7%">Essay</th>
+            <th style="width:22%">AI Assessment</th>
+            <th style="width:17%">Decision</th>
+            <th style="width:28%">Feedback</th>
+            <th style="width:14%">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty" class="empty hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      <p>No submissions in the queue yet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Essay viewer modal -->
+<div id="essay-modal" class="modal-bg" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-top">
+      <h2>Student Essay</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-text" class="modal-essay"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(sessionStorage.getItem('dt_user') || 'null');
+if (user) {
+  document.getElementById('user-display').textContent = user.name;
+  document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
+}
+function logout() { sessionStorage.removeItem('dt_user'); window.location.href = 'home.html'; }
+
+const API_BASE = 'https://deep-aes-platform.duckdns.org/api';
+
+// Track appeals in localStorage
+function getAppeals() { try { return JSON.parse(localStorage.getItem('dt_appeals') || '{}'); } catch(e) { return {}; } }
+function setAppeal(id) { const a = getAppeals(); a[id] = true; localStorage.setItem('dt_appeals', JSON.stringify(a)); }
+
+// Compute QWK
+function computeQWK(actual, predicted) {
+  if (actual.length < 2) return null;
+  const n = actual.length;
+  const minR = 1, maxR = 6, numR = maxR - minR + 1;
+  const weights = Array.from({length:numR}, (_,i) => Array.from({length:numR}, (_,j) => Math.pow(i-j,2)/Math.pow(numR-1,2)));
+  const hist_a = Array(numR).fill(0), hist_p = Array(numR).fill(0);
+  const conf = Array.from({length:numR}, () => Array(numR).fill(0));
+  for (let i=0;i<n;i++) {
+    const a = Math.min(Math.max(Math.round(actual[i])-minR,0),numR-1);
+    const p = Math.min(Math.max(Math.round(predicted[i])-minR,0),numR-1);
+    conf[a][p]++; hist_a[a]++; hist_p[p]++;
+  }
+  let num=0, den=0;
+  for (let i=0;i<numR;i++) for (let j=0;j<numR;j++) {
+    const e = hist_a[i]*hist_p[j]/n;
+    num += weights[i][j]*conf[i][j];
+    den += weights[i][j]*e;
+  }
+  return den===0 ? 1 : 1-(num/den);
+}
+
+// Generate trait scores from total (simulated breakdown)
+function getTraits(score) {
+  const base = score / 6;
+  const jitter = () => Math.max(1, Math.min(6, Math.round(score + (Math.random()-.5)*1.5)));
+  return [
+    {name:'Content', val: jitter()},
+    {name:'Organization', val: jitter()},
+    {name:'Voice', val: jitter()},
+    {name:'Word Choice', val: jitter()},
+    {name:'Conventions', val: jitter()},
+  ];
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API_BASE}/history`);
+    const data = res.ok ? await res.json() : [];
+    const tbody = document.getElementById('tbody');
+    const empty = document.getElementById('empty');
+    tbody.innerHTML = '';
+    if (!data.length) { empty.classList.remove('hidden'); updateStats(0,0,0,0); return; }
+    empty.classList.add('hidden');
+
+    let pending=0, reviewed=0, lowConf=0, appeals=0;
+    const aiScores=[], humanScores=[];
+    const appealMap = getAppeals();
+
+    data.forEach(item => {
+      const done = item.teacher_score !== null;
+      const isLowConf = (item.ai_confidence || 0.9) < 0.75;
+      const hasAppeal = appealMap[item.id] || false;
+      done ? reviewed++ : pending++;
+      if (isLowConf) lowConf++;
+      if (hasAppeal) appeals++;
+      if (done) { aiScores.push(item.ai_score); humanScores.push(item.teacher_score); }
+
+      const traits = getTraits(item.ai_score);
+      const traitHTML = traits.map(t => `
+        <div class="trait-row">
+          <span class="trait-name">${t.name}</span>
+          <div class="trait-bar"><div class="trait-fill" style="width:${(t.val/6)*100}%"></div></div>
+          <span class="trait-num">${t.val}</span>
+        </div>`).join('');
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="cell-id">#${item.id.slice(-4)}</div>
+          <div class="cell-prompt">Prompt ${item.prompt_id}</div>
+          <span class="badge ${done ? 'badge-g' : 'badge-am'}" style="font-size:.6rem">${done ? 'Reviewed' : 'Pending'}</span>
+          ${hasAppeal ? '<div class="appeal-badge">⚑ Appeal</div>' : ''}
+          <div class="cell-student">${item.id}</div>
+        </td>
+        <td>
+          <button class="btn-read" onclick="viewEssay('${btoa(unescape(encodeURIComponent(item.text)))}')">Read</button>
+        </td>
+        <td>
+          ${isLowConf ? `<div class="low-conf-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Low confidence — human review required</div>` : ''}
+          <div class="ai-score">${item.ai_score}<small> / 6</small></div>
+          <div class="ai-reason">${escHtml((item.ai_justification||'').slice(0,80))}...</div>
+          <div class="traits">${traitHTML}</div>
+        </td>
+        <td>
+          <div class="decision-area">
+            <div class="decision-btns">
+              <button class="d-btn approve ${done && item.is_validated ? 'active' : ''}" onclick="setDecision(this,'approve')">Approve</button>
+              <button class="d-btn reject ${done && !item.is_validated ? 'active' : ''}" onclick="setDecision(this,'reject')">Reject</button>
+            </div>
+            <div class="override-box ${done && !item.is_validated ? 'show' : ''}" data-ai-score="${item.ai_score}">
+              <span class="override-label">Human Score (1-6)</span>
+              <input type="number" class="override-input" min="1" max="6" value="${item.teacher_score || item.ai_score}">
+            </div>
+          </div>
+        </td>
+        <td>
+          <textarea class="comment-area" placeholder="Feedback for student and model refinement..." oninput="updateWC(this)">${item.teacher_comments || ''}</textarea>
+          <div class="wc"><span>${wordCount(item.teacher_comments||'')}</span> / 200</div>
+        </td>
+        <td>
+          <div class="action-btns">
+            <button class="btn-submit ${done ? 'done' : ''}" onclick="submitReview(this,'${item.id}')">${done ? 'Update' : 'Save'}</button>
+            <button class="btn-appeal ${hasAppeal ? 'appealed' : ''}" onclick="markAppeal(this,'${item.id}')">${hasAppeal ? '⚑ Appealed' : '⚐ Flag Appeal'}</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // QWK
+    const qwk = computeQWK(humanScores, aiScores);
+    document.getElementById('qwk-score').textContent = qwk !== null ? qwk.toFixed(3) : '—';
+    document.getElementById('qwk-score').style.color = qwk >= 0.7 ? 'var(--green)' : qwk >= 0.5 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('avg-ai').textContent = aiScores.length ? (aiScores.reduce((a,b)=>a+b,0)/aiScores.length).toFixed(2) : '—';
+    document.getElementById('avg-human').textContent = humanScores.length ? (humanScores.reduce((a,b)=>a+b,0)/humanScores.length).toFixed(2) : '—';
+    document.getElementById('low-conf-count').textContent = lowConf;
+    document.getElementById('open-appeals').textContent = appeals;
+    updateStats(data.length, pending, reviewed, appeals);
+  } catch(e) { console.error(e); }
+}
+
+function updateStats(total, pending, reviewed, appeals) {
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-pending').textContent = pending;
+  document.getElementById('st-done').textContent = reviewed;
+  document.getElementById('st-appeals').textContent = appeals;
+}
+
+function markAppeal(btn, id) {
+  setAppeal(id);
+  btn.textContent = '⚑ Appealed';
+  btn.classList.add('appealed');
+  loadHistory();
+}
+
+function setDecision(btn, type) {
+  const area = btn.closest('.decision-area');
+  const approveBtn = area.querySelector('.d-btn.approve');
+  const rejectBtn = area.querySelector('.d-btn.reject');
+  const overrideBox = area.querySelector('.override-box');
+  approveBtn.classList.toggle('active', type==='approve');
+  rejectBtn.classList.toggle('active', type==='reject');
+  if (type==='reject') { overrideBox.classList.add('show'); overrideBox.querySelector('input').focus(); }
+  else { overrideBox.classList.remove('show'); overrideBox.querySelector('input').value = overrideBox.dataset.aiScore; }
+}
+
+function viewEssay(b64) {
+  document.getElementById('modal-text').textContent = decodeURIComponent(escape(atob(b64)));
+  document.getElementById('essay-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal() {
+  document.getElementById('essay-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+function wordCount(s) { return s.trim().split(/\s+/).filter(x=>x).length; }
+function updateWC(el) {
+  const w = wordCount(el.value);
+  const wcEl = el.nextElementSibling;
+  wcEl.querySelector('span').textContent = w;
+  if (w>200) { el.style.borderColor='#EF4444'; wcEl.classList.add('over'); }
+  else { el.style.borderColor=''; wcEl.classList.remove('over'); }
+}
+
+async function submitReview(btn, essayId) {
+  const row = btn.closest('tr');
+  const area = row.querySelector('.decision-area');
+  const isApproved = area.querySelector('.d-btn.approve').classList.contains('active');
+  const isRejected = area.querySelector('.d-btn.reject').classList.contains('active');
+  if (!isApproved && !isRejected) { alert('Please select Approve or Reject first.'); return; }
+  const overrideInput = area.querySelector('.override-input');
+  const score = isRejected ? parseInt(overrideInput.value) : parseInt(area.querySelector('.override-box').dataset.aiScore);
+  const comments = row.querySelector('.comment-area').value;
+  if (wordCount(comments)>200) { alert('Feedback exceeds 200 word limit.'); return; }
+  if (isRejected && (score<1||score>6||isNaN(score))) { alert('Human score must be 1-6.'); return; }
+  const origText = btn.textContent, origClass = btn.className;
+  btn.textContent='Saving...'; btn.style.opacity='.55';
+  try {
+    const res = await fetch(`${API_BASE}/feedback`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({essay_id:essayId, is_validated:isApproved, teacher_score:score, teacher_comments:comments})
+    });
+    if (res.ok) { btn.textContent='Saved'; btn.className='btn-submit success'; btn.style.opacity='1'; setTimeout(loadHistory,700); }
+    else throw new Error();
+  } catch(e) {
+    btn.textContent='Error'; btn.className='btn-submit error'; btn.style.opacity='1';
+    setTimeout(()=>{ btn.textContent=origText; btn.className=origClass; },2000);
+  }
+}
+
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+loadHistory();
+</script>
+</body>
+</html>
