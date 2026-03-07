@@ -25,18 +25,24 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    font-size: 18px;
+  }
+  @media (max-width: 1200px) { html { font-size: 16px; } }
+  @media (max-width: 900px)  { html { font-size: 14px; } }
+  @media (max-width: 600px)  { html { font-size: 13px; } }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.7;
   }
 
   .page {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 52px 44px 80px;
   }
@@ -56,7 +62,7 @@
   }
 
   .doc-title {
-    font-size: 28px;
+    font-size: 1.6rem;
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.25;
@@ -64,7 +70,7 @@
   }
 
   .doc-subtitle {
-    font-size: 15px;
+    font-size: 0.9rem;
     color: var(--text-muted);
     margin-top: 6px;
     font-weight: 400;
@@ -78,7 +84,7 @@
   }
 
   .doc-meta-line {
-    font-size: 12px;
+    font-size: 0.72rem;
     color: var(--text-muted);
     line-height: 1.9;
     font-family: 'JetBrains Mono', monospace;
@@ -88,7 +94,7 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 11px;
+    font-size: 0.68rem;
     color: var(--good);
     font-family: 'JetBrains Mono', monospace;
   }
@@ -109,7 +115,7 @@
   }
 
   .quick-link {
-    font-size: 12px;
+    font-size: 0.72rem;
     font-family: 'JetBrains Mono', monospace;
     color: var(--accent);
     text-decoration: none;
@@ -134,7 +140,7 @@
   }
 
   .toc-title {
-    font-size: 11px;
+    font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -154,7 +160,7 @@
   }
 
   .toc-list a {
-    font-size: 14px;
+    font-size: 0.85rem;
     color: var(--accent);
     text-decoration: none;
     display: flex;
@@ -166,7 +172,7 @@
   .toc-num {
     color: var(--text-light);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 0.72rem;
     min-width: 20px;
   }
 
@@ -183,20 +189,20 @@
   }
 
   .section-num {
-    font-size: 12px;
+    font-size: 0.72rem;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-light);
   }
 
   h2 {
-    font-size: 19px;
+    font-size: 1.15rem;
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--text);
   }
 
   h3 {
-    font-size: 15px;
+    font-size: 0.92rem;
     font-weight: 600;
     color: var(--text);
     margin: 20px 0 8px;
@@ -205,7 +211,7 @@
   p {
     color: var(--text-muted);
     margin-bottom: 12px;
-    font-size: 15px;
+    font-size: 0.92rem;
   }
 
   p strong { color: var(--text); font-weight: 600; }
@@ -221,14 +227,14 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 0.85rem;
   }
 
   thead th {
     background: var(--bg-subtle);
     padding: 9px 16px;
     text-align: left;
-    font-size: 12px;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -249,7 +255,7 @@
 
   tbody td.mono {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8rem;
   }
 
   tbody td.muted { color: var(--text-muted); }
@@ -258,14 +264,14 @@
   tfoot td {
     padding: 10px 16px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.85rem;
     background: var(--bg-subtle);
   }
 
   /* ── BADGES ── */
   .badge {
     display: inline-block;
-    font-size: 11px;
+    font-size: 0.68rem;
     font-family: 'JetBrains Mono', monospace;
     padding: 2px 8px;
     border-radius: 3px;
@@ -301,7 +307,7 @@
 
   .qwk-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--text);
     min-width: 36px;
   }
@@ -312,7 +318,7 @@
     padding: 12px 16px;
     background: var(--bg-subtle);
     margin: 16px 0;
-    font-size: 14px;
+    font-size: 0.85rem;
     color: var(--text-muted);
     border-radius: 0 4px 4px 0;
   }
@@ -336,7 +342,7 @@
 
   .code-label {
     padding: 6px 14px;
-    font-size: 10px;
+    font-size: 0.62rem;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -348,7 +354,7 @@
   pre {
     padding: 16px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8rem;
     line-height: 1.65;
     color: var(--text);
     overflow-x: auto;
@@ -361,7 +367,7 @@
 
   code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8rem;
     background: var(--bg-code);
     border: 1px solid var(--border);
     padding: 1px 6px;
@@ -373,7 +379,7 @@
   .params-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 0.85rem;
     border: 1px solid var(--border);
     border-radius: 4px;
     overflow: hidden;
@@ -388,14 +394,14 @@
   .params-table td:first-child {
     width: 42%;
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 0.8rem;
     font-family: 'JetBrains Mono', monospace;
     border-right: 1px solid var(--border);
   }
 
   .params-table td:last-child {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--text);
   }
 
@@ -423,7 +429,6 @@
   .wf-step:last-child { border-right: none; }
   .wf-step:hover { background: var(--accent-soft); }
 
-  /* Arrow connector */
   .wf-step:not(:last-child)::after {
     content: '';
     position: absolute;
@@ -451,7 +456,7 @@
     border-radius: 50%;
     background: var(--accent);
     color: white;
-    font-size: 10px;
+    font-size: 0.62rem;
     font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
     display: flex;
@@ -461,14 +466,14 @@
   }
 
   .wf-title {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text);
     line-height: 1.3;
   }
 
   .wf-desc {
-    font-size: 11px;
+    font-size: 0.68rem;
     color: var(--text-muted);
     line-height: 1.45;
     font-family: 'JetBrains Mono', monospace;
@@ -477,7 +482,7 @@
   .wf-tag {
     display: inline-block;
     margin-top: 8px;
-    font-size: 10px;
+    font-size: 0.62rem;
     font-family: 'JetBrains Mono', monospace;
     padding: 2px 6px;
     border-radius: 3px;
@@ -486,12 +491,11 @@
     color: var(--text-muted);
   }
 
-  /* confidence callout row at bottom of workflow */
   .workflow-note {
     padding: 10px 16px;
     background: var(--warn-bg);
     border-top: 1px solid var(--border);
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--warn);
     display: flex;
     align-items: center;
@@ -499,7 +503,7 @@
   }
 
   .workflow-note-icon {
-    font-size: 14px;
+    font-size: 0.85rem;
     flex-shrink: 0;
   }
 
@@ -522,7 +526,7 @@
 
   .method {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 0.68rem;
     font-weight: 500;
     padding: 2px 8px;
     border-radius: 3px;
@@ -534,12 +538,12 @@
 
   .endpoint-path {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-size: 0.85rem;
     color: var(--text);
   }
 
   .endpoint-desc {
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--text-muted);
     margin-left: auto;
   }
@@ -566,11 +570,11 @@
   .infra-row:last-child { border-bottom: none; }
   .infra-row:hover { background: var(--bg-subtle); }
 
-  .infra-row > div { padding: 9px 16px; font-size: 14px; }
+  .infra-row > div { padding: 9px 16px; font-size: 0.85rem; }
 
   .infra-row > div:first-child {
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 0.8rem;
     font-family: 'JetBrains Mono', monospace;
     border-right: 1px solid var(--border);
     background: var(--bg-subtle);
@@ -588,13 +592,13 @@
     gap: 16px;
   }
 
-  .footer-author { font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+  .footer-author { font-size: 0.85rem; color: var(--text-muted); line-height: 1.8; }
   .footer-author strong { color: var(--text); font-weight: 600; }
   .footer-author a { color: var(--accent); text-decoration: none; }
   .footer-author a:hover { text-decoration: underline; }
 
   .footer-note {
-    font-size: 12px;
+    font-size: 0.72rem;
     color: var(--text-light);
     font-family: 'JetBrains Mono', monospace;
     text-align: right;
@@ -663,7 +667,6 @@
     </ul>
   </nav>
 
-
   <!-- 1. OVERVIEW -->
   <section id="overview">
     <div class="section-heading">
@@ -673,7 +676,6 @@
     <p>DeepTest is a production-grade automated essay scoring (AES) system built on Meta's Llama 3.1 8B language model. Essays are scored on a 1–6 scale using prompt-specific LoRA adapters trained on the ASAP dataset. Each score is accompanied by a written justification generated via the Groq API. A teacher audit portal enables human review, score overrides, and continuous alignment measurement via <strong>Quadratic Weighted Kappa (QWK)</strong>.</p>
     <p>The system is deployed on Google Cloud Platform with an NVIDIA L4 GPU, served through vLLM, and exposed via a FastAPI backend with Nginx reverse proxy and SSL.</p>
   </section>
-
 
   <!-- 2. ARCHITECTURE -->
   <section id="architecture">
@@ -703,7 +705,6 @@
     </div>
   </section>
 
-
   <!-- 3. WORKFLOW -->
   <section id="workflow">
     <div class="section-heading">
@@ -713,7 +714,6 @@
 
     <div class="workflow-container">
       <div class="workflow-steps">
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">1</div>
@@ -722,7 +722,6 @@
           <div class="wf-desc">Essay text sent via web portal with a prompt_id</div>
           <span class="wf-tag">POST /api/score</span>
         </div>
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">2</div>
@@ -731,7 +730,6 @@
           <div class="wf-desc">prompt_id selects the matching LoRA adapter</div>
           <span class="wf-tag">Multi-LoRA Router</span>
         </div>
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">3</div>
@@ -740,7 +738,6 @@
           <div class="wf-desc">Llama 3.1 8B returns score 1–6 with confidence</div>
           <span class="wf-tag">vLLM · NVIDIA L4</span>
         </div>
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">4</div>
@@ -749,7 +746,6 @@
           <div class="wf-desc">Written explanation generated for the score</div>
           <span class="wf-tag">Groq API</span>
         </div>
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">5</div>
@@ -758,7 +754,6 @@
           <div class="wf-desc">Validate score, override, or flag for appeal</div>
           <span class="wf-tag">Audit Portal</span>
         </div>
-
         <div class="wf-step">
           <div class="wf-step-top">
             <div class="wf-badge">6</div>
@@ -767,7 +762,6 @@
           <div class="wf-desc">AI vs human agreement logged to dashboard</div>
           <span class="wf-tag">Continuous Eval</span>
         </div>
-
       </div>
       <div class="workflow-note">
         <span class="workflow-note-icon">⚠</span>
@@ -776,14 +770,12 @@
     </div>
   </section>
 
-
   <!-- 4. FEATURES -->
   <section id="features">
     <div class="section-heading">
       <span class="section-num">4</span>
       <h2>Core Features</h2>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -819,7 +811,6 @@
     </div>
   </section>
 
-
   <!-- 5. PROMPT CATEGORIES -->
   <section id="prompts">
     <div class="section-heading">
@@ -827,7 +818,6 @@
       <h2>Prompt Categories</h2>
     </div>
     <p>Each category uses a separately trained LoRA adapter. Adapter selection is automatic based on the <code>prompt_id</code> submitted with the essay.</p>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -846,7 +836,6 @@
     </div>
   </section>
 
-
   <!-- 6. RUBRIC -->
   <section id="rubric">
     <div class="section-heading">
@@ -854,7 +843,6 @@
       <h2>Scoring Rubric</h2>
     </div>
     <p>Essays are scored on a 6-point scale. A score of <strong>0</strong> is returned automatically for submissions below the 200-word minimum, without running model inference.</p>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -873,7 +861,6 @@
     </div>
   </section>
 
-
   <!-- 7. TRAINING -->
   <section id="training">
     <div class="section-heading">
@@ -881,7 +868,6 @@
       <h2>Model Training</h2>
     </div>
     <p>Each adapter is trained independently using QLoRA on its respective ASAP prompt category. The base model is never modified — only adapter weights are updated per prompt type.</p>
-
     <table class="params-table">
       <tr><td>Base model</td><td>meta-llama/Llama-3.1-8B-Instruct</td></tr>
       <tr><td>Dataset</td><td>ASAP Automated Student Assessment Prize</td></tr>
@@ -900,7 +886,6 @@
     </table>
   </section>
 
-
   <!-- 8. INFERENCE -->
   <section id="inference">
     <div class="section-heading">
@@ -908,7 +893,6 @@
       <h2>Inference System</h2>
     </div>
     <p>vLLM's multi-LoRA serving loads the base model once and swaps adapter weights per request. Up to 8 adapters can be held in memory concurrently.</p>
-
     <table class="params-table">
       <tr><td>Runtime</td><td>vLLM 0.11.0</td></tr>
       <tr><td>GPU</td><td>NVIDIA L4</td></tr>
@@ -918,7 +902,6 @@
       <tr><td>Adapter selection</td><td>prompt_id routing at request time</td></tr>
     </table>
   </section>
-
 
   <!-- 9. PERFORMANCE -->
   <section id="performance">
@@ -987,10 +970,8 @@
         </tfoot>
       </table>
     </div>
-
-    <p style="font-size:13px;color:var(--text-light);margin-top:8px;">QWK ranges from −1 to 1. Scores above 0.6 are generally considered acceptable for automated scoring in educational testing contexts. Prompt 6 is currently below this threshold and is flagged for adapter retraining.</p>
+    <p style="font-size:0.78rem;color:var(--text-light);margin-top:8px;">QWK ranges from −1 to 1. Scores above 0.6 are generally considered acceptable for automated scoring in educational testing contexts. Prompt 6 is currently below this threshold and is flagged for adapter retraining.</p>
   </section>
-
 
   <!-- 10. API -->
   <section id="api">
@@ -1065,14 +1046,12 @@
     </div>
   </section>
 
-
   <!-- 11. INFRASTRUCTURE -->
   <section id="infrastructure">
     <div class="section-heading">
       <span class="section-num">11</span>
       <h2>Infrastructure</h2>
     </div>
-
     <div class="infra-grid">
       <div class="infra-row"><div>Cloud provider</div><div>Google Cloud Platform</div></div>
       <div class="infra-row"><div>Instance type</div><div>g2-standard-4</div></div>
@@ -1091,27 +1070,21 @@
     </div>
   </section>
 
-
   <!-- 12. LIMITATIONS -->
   <section id="bias">
     <div class="section-heading">
       <span class="section-num">12</span>
       <h2>Known Limitations</h2>
     </div>
-
     <h3>Length Bias</h3>
     <p>Longer essays may receive higher scores independent of quality. A 200-word minimum is enforced; submissions below this receive a score of 0 without inference.</p>
-
     <h3>Vocabulary Bias</h3>
     <p>Rare or sophisticated vocabulary can disproportionately influence predicted scores regardless of overall argument quality. This is a known artifact of training on the ASAP dataset.</p>
-
     <h3>Prompt 6 Underperformance</h3>
     <p>The Descriptive / Observational adapter (Prompt 6) achieves a QWK of 0.413, significantly below the system average of 0.633. This adapter is flagged for retraining. Confidence-based routing ensures these essays receive human review in the interim.</p>
-
     <h3>Confidence Threshold</h3>
     <p>Predictions with confidence below <strong>0.75</strong> are held for mandatory human review. This threshold is configurable in <code>config/default.yaml</code>.</p>
   </section>
-
 
   <!-- 13. LOCAL SETUP -->
   <section id="local">
@@ -1119,7 +1092,6 @@
       <span class="section-num">13</span>
       <h2>Local Setup</h2>
     </div>
-
     <h3>1. Clone and create environment</h3>
     <div class="code-block">
       <div class="code-label">Shell</div>
@@ -1134,7 +1106,6 @@ conda activate aes-llama-310
 <span class="cmt"># Install dependencies</span>
 pip install vllm fastapi uvicorn asyncpg groq PyPDF2 python-docx pyyaml</pre>
     </div>
-
     <h3>2. Start PostgreSQL</h3>
     <div class="code-block">
       <div class="code-label">Shell</div>
@@ -1146,7 +1117,6 @@ pip install vllm fastapi uvicorn asyncpg groq PyPDF2 python-docx pyyaml</pre>
   -p 5432:5432 \
   postgres:15</pre>
     </div>
-
     <h3>3. Start the API server</h3>
     <div class="code-block">
       <div class="code-label">Shell</div>
@@ -1155,7 +1125,6 @@ GROQ_API_KEY="your_key_here" \
 uvicorn backend.main:app --host 0.0.0.0 --port 8000</pre>
     </div>
   </section>
-
 
   <!-- FOOTER -->
   <footer class="doc-footer">
