@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Deep Shukla - AES Research for Susan Lottridge</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:16px;scroll-behavior:smooth;}
+body{
+  background:#0a0a0a;
+  color:#f0ece4;
+  font-family:'DM Sans',-apple-system,sans-serif;
+  font-weight:400;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#141414;
+  --bg3:#1e1e1e;
+  --muted:#9a9690;
+  --faint:#3a3835;
+  --gold:#d4b070;
+  --gold2:#f0d090;
+  --blue2:#90c4f0;
+  --border:rgba(255,255,255,0.12);
+  --border2:rgba(255,255,255,0.07);
+}
+
+.mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 900px 700px at 10% 5%,rgba(212,176,112,0.08) 0%,transparent 65%),
+    radial-gradient(ellipse 600px 800px at 88% 92%,rgba(60,100,180,0.09) 0%,transparent 60%);
+}
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.18;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.page{
+  position:relative;z-index:2;
+  max-width:880px;
+  margin:0 auto;
+  padding:72px 80px 120px;
+}
+
+/* HEADER */
+.header-block{margin-bottom:52px;padding-bottom:36px;border-bottom:1px solid var(--border2);}
+.header-identity{margin-bottom:28px;}
+.name-line{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(2rem,3.4vw,2.8rem);
+  font-weight:700;letter-spacing:-0.02em;line-height:1.15;
+  color:#ffffff;margin-bottom:10px;
+}
+.meta-row{
+  display:flex;align-items:center;flex-wrap:wrap;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;
+  color:#d8d4cc;
+}
+.meta-sep{margin:0 10px;color:var(--faint);}
+
+.greeting-block{
+  background:linear-gradient(135deg,rgba(212,176,112,0.08) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(212,176,112,0.22);border-radius:10px;padding:22px 28px;
+}
+.greeting-text{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.4rem,2.6vw,1.9rem);
+  font-weight:500;font-style:italic;line-height:1.3;
+  color:#ffffff;letter-spacing:-0.01em;
+}
+.greeting-text em{font-style:normal;color:var(--gold2);}
+
+/* INTRO */
+.intro{font-size:16.5px;line-height:1.9;color:#d8d4cc;font-weight:400;}
+.intro p+p{margin-top:1.1em;}
+.intro strong{color:#ffffff;font-weight:600;}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:16px;margin:44px 0;}
+.divider-line{flex:1;height:1px;background:var(--border2);}
+.divider-glyph{font-family:'Playfair Display',serif;font-size:18px;color:var(--faint);line-height:1;font-style:italic;}
+
+/* SECTION LABEL */
+.sec{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--gold2);margin-bottom:18px;
+  display:flex;align-items:center;gap:14px;
+}
+.sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(240,208,144,0.35),transparent);max-width:100px;}
+
+/* PAPER CARD */
+.paper-card{
+  display:block;text-decoration:none;
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:30px 34px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.3s,box-shadow 0.3s,transform 0.3s;
+  box-shadow:0 2px 20px rgba(0,0,0,0.4);
+}
+.paper-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.paper-card:hover{border-color:rgba(212,176,112,0.4);box-shadow:0 16px 52px rgba(0,0,0,0.55);transform:translateY(-3px);}
+.paper-card:hover::before{opacity:1;}
+.paper-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.paper-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold2);
+}
+.paper-arrow-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#ffffff;transition:all 0.25s;
+}
+.paper-card:hover .paper-arrow-btn{background:var(--gold);border-color:var(--gold);color:#0a0a0a;transform:rotate(-45deg);}
+.paper-title{
+  font-family:'Playfair Display',serif;
+  font-size:19px;font-weight:500;line-height:1.5;letter-spacing:-0.01em;
+  color:#ffffff;
+}
+
+/* PROJECT */
+.project-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
+.proj-accent{height:2px;background:linear-gradient(90deg,var(--gold) 0%,rgba(212,176,112,0.4) 60%,transparent 100%);}
+.proj-head{padding:28px 34px 24px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.proj-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;letter-spacing:-0.02em;color:#ffffff;margin-bottom:10px;}
+.proj-desc{font-size:15px;line-height:1.75;color:#d0ccc4;max-width:500px;}
+
+.live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(22,163,74,0.15);border:1px solid rgba(22,163,74,0.3);color:#6ee7a0;
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+  padding:6px 14px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:4px;
+}
+.live-dot{width:5px;height:5px;border-radius:50%;background:#6ee7a0;animation:pulse 2.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.85);}}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border2);}
+.stat{padding:22px 14px;text-align:center;border-right:1px solid var(--border2);transition:background 0.2s;}
+.stat:last-child{border-right:none;}
+.stat:hover{background:rgba(255,255,255,0.03);}
+.stat-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:500;color:#ffffff;display:block;line-height:1.1;margin-bottom:6px;letter-spacing:-0.02em;}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:300;letter-spacing:0.14em;text-transform:uppercase;color:#b0aca6;}
+
+/* TILES */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border2);border-bottom:1px solid var(--border2);}
+.tile{background:var(--bg2);padding:20px 26px;display:flex;gap:14px;align-items:flex-start;transition:background 0.2s;}
+.tile:hover{background:rgba(255,255,255,0.025);}
+.tile-icon{font-size:15px;line-height:1.7;flex-shrink:0;opacity:0.7;}
+.tile-name{font-size:14px;font-weight:600;color:#ffffff;margin-bottom:4px;letter-spacing:-0.01em;}
+.tile-body{font-size:13px;color:#b8b4ac;line-height:1.6;}
+
+/* DOCS ROW */
+.readme-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 34px;border-bottom:1px solid var(--border2);
+  text-decoration:none;transition:background 0.2s;gap:12px;
+}
+.readme-row:hover{background:rgba(255,255,255,0.03);}
+.readme-inner{display:flex;align-items:center;gap:12px;}
+.readme-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--gold2);background:rgba(212,176,112,0.1);border:1px solid rgba(212,176,112,0.25);
+  padding:4px 10px;border-radius:4px;white-space:nowrap;font-weight:500;
+}
+.readme-label{font-size:14px;font-weight:400;color:#ffffff;}
+.readme-chev{font-size:14px;color:#ffffff;transition:color 0.2s,transform 0.2s;}
+.readme-row:hover .readme-chev{color:var(--gold);transform:translateX(4px);}
+
+/* CTA */
+.cta{padding:28px 34px;display:flex;justify-content:center;}
+.btn-hero{
+  display:inline-flex;align-items:center;gap:10px;
+  text-decoration:none;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  padding:15px 44px;border-radius:8px;
+  background:var(--gold);color:#0a0a0a;
+  border:1px solid var(--gold);
+  box-shadow:0 4px 24px rgba(212,176,112,0.35);
+  transition:all 0.2s;letter-spacing:0.01em;white-space:nowrap;
+}
+.btn-hero:hover{background:var(--gold2);border-color:var(--gold2);box-shadow:0 6px 32px rgba(212,176,112,0.5);transform:translateY(-2px);}
+
+/* FOOTNOTE */
+.footnote{
+  margin-top:36px;padding:16px 22px;
+  border-left:2px solid rgba(212,176,112,0.3);background:rgba(212,176,112,0.04);
+  border-radius:0 6px 6px 0;font-size:13px;font-style:italic;color:#b0aca6;line-height:1.7;
+}
+
+/* CONTACT */
+.contact{margin-top:44px;padding-top:24px;border-top:1px solid var(--border2);display:flex;flex-wrap:wrap;align-items:center;}
+.contact-item{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:300;letter-spacing:0.07em;
+  padding:6px 0;margin-right:24px;text-decoration:none;transition:color 0.2s;
+}
+.contact-item.email{color:#ffffff;}
+.contact-item.email:hover{color:var(--gold2);}
+.contact-item.linkedin{color:var(--blue2);}
+.contact-item.linkedin:hover{color:#c0dcff;}
+.contact-item.github{color:#e0dcd4;}
+.contact-item.github:hover{color:#ffffff;}
+.contact-icon{
+  width:26px;height:26px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+}
+.contact-item.email .contact-icon{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);}
+.contact-item.linkedin .contact-icon{background:rgba(110,168,212,0.15);border:1px solid rgba(110,168,212,0.3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:var(--blue2);}
+.contact-item.github .contact-icon{background:rgba(232,228,220,0.1);border:1px solid rgba(232,228,220,0.2);}
+
+@media(max-width:900px){.page{padding:60px 44px 100px;}}
+@media(max-width:640px){
+  .page{padding:44px 20px 80px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .tiles{grid-template-columns:1fr;}
+  .proj-head{flex-direction:column;}
+  .name-line{font-size:1.7rem;}
+  .greeting-text{font-size:1.3rem;}
+}
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="grain"></div>
+
+<main class="page">
+
+  <div class="header-block">
+    <div class="header-identity">
+      <div class="name-line">Deep Shukla</div>
+      <div class="meta-row">
+        Graduate Student
+        <span class="meta-sep">·</span>
+        Data Science
+        <span class="meta-sep">·</span>
+        University of Colorado Boulder
+      </div>
+    </div>
+    <div class="greeting-block">
+      <div class="greeting-text">Hi Susan, <em>genuinely glad</em> you opened this.</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <p>"Even in a field as well-established as automated scoring" - that line from your post stuck with me. Because these systems are making decisions that shape the futures of thousands of students like me and the fairness problem is still wide open.</p>
+    <p>So I started digging and found that most papers just benchmark one model against another and call it progress. Nobody was really asking whether these systems fail certain students more than others, or whether a score with zero explanation is even worth giving.</p>
+    <p>Your work on <strong>fairness gaps and measurement validity</strong> was one of the few things I read that was actually asking those harder questions. So I kept going, read everything I could find, wrote a technical paper on where I think current systems are breaking down, and built a live platform where each essay type gets its own scoring adapter, every score comes with a written justification, a teacher can step in and override before anything gets released, and AI scores alongside human scores get stored to track real-time agreement and feed back into the model.</p>
+    <p>Would love your thoughts on the paper and the platform. What directions you think are worth exploring further, and whether there are questions I should be asking that I have not thought of yet.</p>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-glyph">§</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="sec">Research &amp; Analysis</div>
+
+  <a class="paper-card" href="https://623dks.github.io/aes-platform/Research-paper.html" target="_blank">
+    <div class="paper-header">
+      <div class="paper-tag">Technical Paper</div>
+      <div class="paper-arrow-btn">↗</div>
+    </div>
+    <div class="paper-title">Automated Essay Scoring in 2026: Operational Realities, Fairness Failures, and the Infrastructure Case for Parameter-Efficient Architectures</div>
+  </a>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-glyph">§</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="sec">Live Prototype</div>
+
+  <div class="project-wrap">
+    <div class="proj-accent"></div>
+    <div class="proj-head">
+      <div>
+        <div class="proj-title">DeepTest AES Platform</div>
+        <div class="proj-desc">A working multi-LoRA system built to test whether parameter-efficient fine-tuning can address the fairness, explainability, and infrastructure constraints that make full fine-tuning unworkable at scale in production AES.</div>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span>Live</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="stat-val" data-target="0.633" data-dec="3">0.633</span><span class="stat-lbl">Avg QWK</span></div>
+      <div class="stat"><span class="stat-val" data-target="7" data-suffix="x">7x</span><span class="stat-lbl">LoRA Adapters</span></div>
+      <div class="stat"><span class="stat-val" data-target="87" data-suffix="%">87%</span><span class="stat-lbl">Adj. Agreement</span></div>
+      <div class="stat"><span class="stat-val">L4</span><span class="stat-lbl">NVIDIA GPU</span></div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="tile-icon">⚙</div>
+        <div><div class="tile-name">Prompt-specific adapter routing</div><div class="tile-body">Each essay type gets its own QLoRA adapter, selected at inference via prompt_id</div></div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">🛡</div>
+        <div><div class="tile-name">Confidence-gated human review</div><div class="tile-body">Predictions below 0.75 confidence route to teacher audit before release</div></div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">✍</div>
+        <div><div class="tile-name">Written score justification</div><div class="tile-body">Natural language explanation generated per score to support audit and feedback</div></div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon">📈</div>
+        <div><div class="tile-name">Real-time QWK tracking</div><div class="tile-body">AI and human scores stored to DB, agreement tracked per adapter and fed back into the model</div></div>
+      </div>
+    </div>
+
+    <a class="readme-row" href="https://623dks.github.io/aes-platform/README.html" target="_blank">
+      <div class="readme-inner">
+        <span class="readme-tag">Docs</span>
+        <span class="readme-label">System architecture, training config &amp; API reference</span>
+      </div>
+      <span class="readme-chev">→</span>
+    </a>
+
+    <div class="cta">
+      <a class="btn-hero" href="https://623dks.github.io/aes-platform/home.html" target="_blank">↗ View Live Platform</a>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Note: built and running on limited student compute, a single GCP instance with an NVIDIA L4. Accuracy and throughput would differ meaningfully at production scale.
+  </div>
+
+  <div class="contact">
+    <span class="contact-item email">
+      <span class="contact-icon">✉</span>deep.shukla@colorado.edu
+    </span>
+    <a class="contact-item linkedin" href="https://www.linkedin.com/in/deep-shukla-b4035220a/" target="_blank">
+      <span class="contact-icon">in</span>LinkedIn
+    </a>
+    <a class="contact-item github" href="https://github.com/623dks/aes-platform" target="_blank">
+      <span class="contact-icon">⌥</span>GitHub
+    </a>
+  </div>
+
+</main>
+
+<script>
+function animateCounter(el) {
+  const raw = el.dataset.target; if (!raw) return;
+  const target = parseFloat(raw), dec = parseInt(el.dataset.dec || '0'), suffix = el.dataset.suffix || '';
+  const duration = 1100, startFrom = target * 0.5, startTime = performance.now();
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function tick(now) {
+    const p = Math.min((now - startTime) / duration, 1);
+    const val = startFrom + (target - startFrom) * easeOut(p);
+    el.textContent = (dec > 0 ? val.toFixed(dec) : Math.round(val)) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+window.addEventListener('load', () => {
+  document.querySelectorAll('.stat-val[data-target]').forEach(el => setTimeout(() => animateCounter(el), 400));
+});
+
+const card = document.querySelector('.paper-card');
+if (card) {
+  card.addEventListener('mousemove', (e) => {
+    const r = card.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width - 0.5) * 8;
+    const y = ((e.clientY - r.top) / r.height - 0.5) * 5;
+    card.style.transform = `translateY(-3px) rotateX(${-y}deg) rotateY(${x}deg)`;
+  });
+  card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.transition = 'transform 0.4s ease, border-color 0.3s, box-shadow 0.3s'; });
+  card.addEventListener('mouseenter', () => { card.style.transition = 'transform 0.08s ease, border-color 0.3s, box-shadow 0.3s'; });
+}
+</script>
+</body>
+</html>
