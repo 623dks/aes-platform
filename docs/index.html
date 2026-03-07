@@ -215,7 +215,7 @@ document.getElementById('score-btn').addEventListener('click', async () => {
     const studentId = document.getElementById('student-id').value;
     const userName = user ? user.name : 'guest';
 
-    if (!text && !file) {
+    if (!text) {
         alert('Please write an essay first.');
         return;
     }
