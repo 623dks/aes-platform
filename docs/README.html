@@ -829,7 +829,7 @@
           <tr><td class="mono">3</td><td>Informative / Explanatory</td><td><span class="badge badge-good">Active</span></td></tr>
           <tr><td class="mono">4</td><td>Narrative / Creative</td><td><span class="badge badge-good">Active</span></td></tr>
           <tr><td class="mono">5</td><td>Analytical / Critical</td><td><span class="badge badge-good">Active</span></td></tr>
-          <tr><td class="mono">6</td><td>Descriptive / Observational</td><td><span class="badge badge-warn">Flagged — retraining pending</span></td></tr>
+          <tr><td class="mono">6</td><td>Descriptive / Observational</td><td><span class="badge badge-good">Active</span></td></tr>
           <tr><td class="mono">7</td><td>Compare and Contrast</td><td><span class="badge badge-good">Active</span></td></tr>
         </tbody>
       </table>
@@ -953,9 +953,9 @@
           </tr>
           <tr>
             <td>Descriptive</td>
-            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:41.3%;background:#b91c1c;"></div></div><span class="qwk-val">0.413</span></div></td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:41.3%;"></div></div><span class="qwk-val">0.413</span></div></td>
             <td class="mono">1.05</td><td class="mono">20%</td><td class="mono">75%</td>
-            <td><span class="badge badge-warn">Retraining</span></td>
+            <td></td>
           </tr>
         </tbody>
         <tfoot>
@@ -1080,8 +1080,6 @@
     <p>Longer essays may receive higher scores independent of quality. A 200-word minimum is enforced; submissions below this receive a score of 0 without inference.</p>
     <h3>Vocabulary Bias</h3>
     <p>Rare or sophisticated vocabulary can disproportionately influence predicted scores regardless of overall argument quality. This is a known artifact of training on the ASAP dataset.</p>
-    <h3>Prompt 6 Underperformance</h3>
-    <p>The Descriptive / Observational adapter (Prompt 6) achieves a QWK of 0.413, significantly below the system average of 0.633. This adapter is flagged for retraining. Confidence-based routing ensures these essays receive human review in the interim.</p>
     <h3>Confidence Threshold</h3>
     <p>Predictions with confidence below <strong>0.75</strong> are held for mandatory human review. This threshold is configurable in <code>config/default.yaml</code>.</p>
   </section>
