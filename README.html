@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepTest — Automated Essay Scoring Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --text:        #1a1a1a;
+    --text-muted:  #5a5a5a;
+    --text-light:  #8a8a8a;
+    --border:      #e0e0e0;
+    --bg:          #ffffff;
+    --bg-subtle:   #f7f7f7;
+    --bg-code:     #f4f4f4;
+    --accent:      #1a3a8f;
+    --accent-soft: #eef1fb;
+    --warn:        #92400e;
+    --warn-bg:     #fffbeb;
+    --good:        #166534;
+    --good-bg:     #f0fdf4;
+    --bad:         #991b1b;
+    --bad-bg:      #fef2f2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    padding-bottom: 28px;
+    border-bottom: 2px solid var(--text);
+    margin-bottom: 36px;
+  }
+
+  .doc-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .doc-title {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  .doc-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 400;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .doc-meta {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .doc-meta-line {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.9;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--good);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #16a34a;
+  }
+
+  .quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .quick-link {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .quick-link:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 40px;
+  }
+
+  .toc-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .toc-list {
+    list-style: none;
+    columns: 2;
+    column-gap: 32px;
+  }
+
+  .toc-list li {
+    margin-bottom: 5px;
+    break-inside: avoid;
+  }
+
+  .toc-list a {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    gap: 8px;
+  }
+
+  .toc-list a:hover { text-decoration: underline; }
+
+  .toc-num {
+    color: var(--text-light);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    min-width: 18px;
+  }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 44px; }
+
+  .section-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-light);
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 18px 0 6px;
+  }
+
+  p {
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  p strong { color: var(--text); font-weight: 600; }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 14px 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--bg-subtle);
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-subtle); }
+
+  tbody td {
+    padding: 9px 14px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody td.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  tbody td.muted { color: var(--text-muted); }
+
+  tfoot tr { border-top: 2px solid var(--border); }
+  tfoot td {
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    background: var(--bg-subtle);
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .badge-good  { background: var(--good-bg);  color: var(--good); }
+  .badge-warn  { background: var(--warn-bg);  color: var(--warn); }
+  .badge-bad   { background: var(--bad-bg);   color: var(--bad);  }
+  .badge-muted { background: var(--bg-subtle); color: var(--text-muted); }
+
+  /* ── QWK BAR ── */
+  .qwk-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+  }
+
+  .qwk-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .qwk-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+
+  .qwk-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    min-width: 34px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--border);
+    padding: 11px 14px;
+    background: var(--bg-subtle);
+    margin: 14px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .callout.warn {
+    border-left-color: #d97706;
+    background: var(--warn-bg);
+    color: var(--warn);
+  }
+
+  .callout strong { color: inherit; }
+
+  /* ── CODE ── */
+  .code-block {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+
+  .code-label {
+    padding: 5px 14px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+
+  pre {
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  .cmt { color: var(--text-light); font-style: italic; }
+  .kw  { color: #1a3a8f; font-weight: 500; }
+  .str { color: #166534; }
+  .num { color: #92400e; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  /* ── PARAMS TABLE ── */
+  .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+
+  .params-table tr { border-bottom: 1px solid var(--border); }
+  .params-table tr:last-child { border-bottom: none; }
+  .params-table tr:hover { background: var(--bg-subtle); }
+
+  .params-table td { padding: 8px 14px; vertical-align: top; }
+
+  .params-table td:first-child {
+    width: 42%;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    border-right: 1px solid var(--border);
+  }
+
+  .params-table td:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* ── WORKFLOW ── */
+  .workflow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 18px 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .wf-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+    max-width: 110px;
+    position: relative;
+  }
+
+  .wf-item:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    top: 12px;
+    right: -13px;
+    color: var(--text-light);
+    font-size: 13px;
+  }
+
+  .wf-step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .wf-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.35;
+    margin-bottom: 3px;
+  }
+
+  .wf-sub {
+    font-size: 10px;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.35;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── API ENDPOINTS ── */
+  .endpoint {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+
+  .endpoint-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .method-get  { background: #dbeafe; color: #1e40af; }
+  .method-post { background: #d1fae5; color: #065f46; }
+
+  .endpoint-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .endpoint-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .endpoint-body-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── INFRA ── */
+  .infra-grid {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+
+  .infra-row {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .infra-row:last-child { border-bottom: none; }
+  .infra-row:hover { background: var(--bg-subtle); }
+
+  .infra-row > div {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .infra-row > div:first-child {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    border-right: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-author { font-size: 13px; color: var(--text-muted); line-height: 1.8; }
+  .footer-author strong { color: var(--text); font-weight: 600; }
+  .footer-author a { color: var(--accent); text-decoration: none; }
+  .footer-author a:hover { text-decoration: underline; }
+
+  .footer-note {
+    font-size: 11px;
+    color: var(--text-light);
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 28px 18px 60px; }
+    .doc-header-top { flex-direction: column; }
+    .doc-meta { text-align: left; }
+    .toc-list { columns: 1; }
+    .endpoint-body-split { grid-template-columns: 1fr; }
+    .doc-footer { flex-direction: column; }
+    .footer-note { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="doc-header-top">
+      <div>
+        <div class="doc-title">DeepTest: Automated Essay Scoring Platform</div>
+        <div class="doc-subtitle">Fine-tuned Llama 3.1 8B with prompt-specific LoRA adapters, human audit pipeline, and continuous QWK evaluation</div>
+      </div>
+      <div class="doc-meta">
+        <div class="doc-meta-line">Version 1.0</div>
+        <div class="doc-meta-line">Deep Shukla</div>
+        <div class="doc-meta-line">Univ. of Colorado Boulder</div>
+        <div class="doc-meta-line" style="margin-top:4px;">
+          <span class="status-indicator"><span class="status-dot"></span>System online</span>
+        </div>
+      </div>
+    </div>
+    <div class="quick-links">
+      <a class="quick-link" href="https://623dks.github.io/aes-platform" target="_blank">↗ Student Portal</a>
+      <a class="quick-link" href="https://deep-aes-platform.duckdns.org/api/health" target="_blank">↗ API Health</a>
+      <a class="quick-link" href="https://github.com/623dks/aes-platform" target="_blank">↗ GitHub</a>
+      <a class="quick-link" href="https://www.linkedin.com/in/deep-shukla-b4035220a/" target="_blank">↗ LinkedIn</a>
+      <a class="quick-link" href="mailto:deep.shukla@colorado.edu">✉ deep.shukla@colorado.edu</a>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#overview"><span class="toc-num">1</span>Overview</a></li>
+      <li><a href="#architecture"><span class="toc-num">2</span>System Architecture</a></li>
+      <li><a href="#workflow"><span class="toc-num">3</span>Platform Workflow</a></li>
+      <li><a href="#features"><span class="toc-num">4</span>Core Features</a></li>
+      <li><a href="#prompts"><span class="toc-num">5</span>Prompt Categories</a></li>
+      <li><a href="#rubric"><span class="toc-num">6</span>Scoring Rubric</a></li>
+      <li><a href="#training"><span class="toc-num">7</span>Model Training</a></li>
+      <li><a href="#inference"><span class="toc-num">8</span>Inference System</a></li>
+      <li><a href="#performance"><span class="toc-num">9</span>Evaluation &amp; Results</a></li>
+      <li><a href="#api"><span class="toc-num">10</span>API Reference</a></li>
+      <li><a href="#infrastructure"><span class="toc-num">11</span>Infrastructure</a></li>
+      <li><a href="#bias"><span class="toc-num">12</span>Known Limitations</a></li>
+      <li><a href="#local"><span class="toc-num">13</span>Local Setup</a></li>
+    </ul>
+  </nav>
+
+
+  <!-- 1. OVERVIEW -->
+  <section id="overview">
+    <div class="section-heading">
+      <span class="section-num">1</span>
+      <h2>Overview</h2>
+    </div>
+    <p>DeepTest is a production-grade automated essay scoring (AES) system built on Meta's Llama 3.1 8B language model. Essays are scored on a 1–6 scale using prompt-specific LoRA adapters trained on the ASAP dataset. Each score is accompanied by a written justification generated via the Groq API. A teacher audit portal enables human review, score overrides, and continuous alignment measurement via <strong>Quadratic Weighted Kappa (QWK)</strong>.</p>
+    <p>The system is deployed on Google Cloud Platform with an NVIDIA L4 GPU, served through vLLM, and exposed via a FastAPI backend with Nginx reverse proxy and SSL.</p>
+  </section>
+
+
+  <!-- 2. ARCHITECTURE -->
+  <section id="architecture">
+    <div class="section-heading">
+      <span class="section-num">2</span>
+      <h2>System Architecture</h2>
+    </div>
+    <p>The base Llama 3.1 8B model loads once into GPU memory. LoRA adapters are dynamically selected at inference time based on the <code>prompt_id</code> in each request. Score justifications are generated separately via the Groq API.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Component</th><th>Technology</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Frontend</td><td class="muted">Student submission portal</td><td class="mono">GitHub Pages</td></tr>
+          <tr><td>Proxy</td><td class="muted">HTTPS termination + SSL</td><td class="mono">Nginx + Certbot</td></tr>
+          <tr><td>Backend</td><td class="muted">API server + request routing</td><td class="mono">FastAPI (Python)</td></tr>
+          <tr><td>Inference</td><td class="muted">LLM serving engine</td><td class="mono">vLLM 0.11.0</td></tr>
+          <tr><td>Model</td><td class="muted">Base language model</td><td class="mono">Llama 3.1 8B Instruct</td></tr>
+          <tr><td>Adapters</td><td class="muted">Prompt-specific fine-tuning</td><td class="mono">7× LoRA (QLoRA)</td></tr>
+          <tr><td>Justification</td><td class="muted">Explanation generation</td><td class="mono">Groq API</td></tr>
+          <tr><td>Storage</td><td class="muted">Essay + feedback persistence</td><td class="mono">PostgreSQL 15</td></tr>
+          <tr><td>Audit</td><td class="muted">Teacher review + QWK tracking</td><td class="mono">Custom portal</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- 3. WORKFLOW -->
+  <section id="workflow">
+    <div class="section-heading">
+      <span class="section-num">3</span>
+      <h2>Platform Workflow</h2>
+    </div>
+
+    <div class="workflow">
+      <div class="wf-item">
+        <div class="wf-step-num">1</div>
+        <div class="wf-label">Student Submits</div>
+        <div class="wf-sub">Essay + prompt_id via portal</div>
+      </div>
+      <div class="wf-item">
+        <div class="wf-step-num">2</div>
+        <div class="wf-label">Adapter Routed</div>
+        <div class="wf-sub">prompt_id selects LoRA</div>
+      </div>
+      <div class="wf-item">
+        <div class="wf-step-num">3</div>
+        <div class="wf-label">Scored 1–6</div>
+        <div class="wf-sub">vLLM + Llama 3.1 8B</div>
+      </div>
+      <div class="wf-item">
+        <div class="wf-step-num">4</div>
+        <div class="wf-label">Justified</div>
+        <div class="wf-sub">Explanation via Groq</div>
+      </div>
+      <div class="wf-item">
+        <div class="wf-step-num">5</div>
+        <div class="wf-label">Teacher Review</div>
+        <div class="wf-sub">Validate, override, flag</div>
+      </div>
+      <div class="wf-item">
+        <div class="wf-step-num">6</div>
+        <div class="wf-label">QWK Updated</div>
+        <div class="wf-sub">AI vs human logged</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Confidence routing:</strong> Predictions with confidence below 0.75 are automatically held for mandatory human review before results are returned to the student.
+    </div>
+  </section>
+
+
+  <!-- 4. FEATURES -->
+  <section id="features">
+    <div class="section-heading">
+      <span class="section-num">4</span>
+      <h2>Core Features</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Automated Essay Scoring</strong></td>
+            <td class="muted">Fine-tuned model scores essays 1–6. Essays below 200 words are automatically scored 0 and returned without inference.</td>
+          </tr>
+          <tr>
+            <td><strong>Prompt-Specific Adapters</strong></td>
+            <td class="muted">Seven independent LoRA adapters, each trained for a specific essay type and its corresponding scoring rubric.</td>
+          </tr>
+          <tr>
+            <td><strong>Justification Generation</strong></td>
+            <td class="muted">Each score includes a written explanation generated via Groq API to support student feedback and teacher review.</td>
+          </tr>
+          <tr>
+            <td><strong>Human Audit Pipeline</strong></td>
+            <td class="muted">Teachers validate scores, apply overrides, submit comments, and flag essays for appeal through a dedicated portal.</td>
+          </tr>
+          <tr>
+            <td><strong>Confidence-Based Routing</strong></td>
+            <td class="muted">Predictions below confidence threshold 0.75 are held for mandatory human review before being finalized.</td>
+          </tr>
+          <tr>
+            <td><strong>Continuous QWK Evaluation</strong></td>
+            <td class="muted">Human feedback is used to compute QWK between AI and human scores, tracked continuously in the dashboard.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- 5. PROMPT CATEGORIES -->
+  <section id="prompts">
+    <div class="section-heading">
+      <span class="section-num">5</span>
+      <h2>Prompt Categories</h2>
+    </div>
+    <p>Each category uses a separately trained LoRA adapter. Adapter selection is automatic based on the <code>prompt_id</code> submitted with the essay.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Prompt Type</th><th>Adapter Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>Persuasive / Argumentative</td><td><span class="badge badge-good">Active</span></td></tr>
+          <tr><td class="mono">2</td><td>Source Based / Evidence</td><td><span class="badge badge-good">Active</span></td></tr>
+          <tr><td class="mono">3</td><td>Informative / Explanatory</td><td><span class="badge badge-good">Active</span></td></tr>
+          <tr><td class="mono">4</td><td>Narrative / Creative</td><td><span class="badge badge-good">Active</span></td></tr>
+          <tr><td class="mono">5</td><td>Analytical / Critical</td><td><span class="badge badge-good">Active</span></td></tr>
+          <tr><td class="mono">6</td><td>Descriptive / Observational</td><td><span class="badge badge-warn">Flagged — retraining pending</span></td></tr>
+          <tr><td class="mono">7</td><td>Compare and Contrast</td><td><span class="badge badge-good">Active</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- 6. RUBRIC -->
+  <section id="rubric">
+    <div class="section-heading">
+      <span class="section-num">6</span>
+      <h2>Scoring Rubric</h2>
+    </div>
+    <p>Essays are scored on a 6-point scale. A score of <strong>0</strong> is returned automatically for submissions below the 200-word minimum, without running model inference.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Score</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">6</td><td>Sophisticated language control with strong argument and evidence</td></tr>
+          <tr><td class="mono">5</td><td>Clear argument with developed reasoning and supporting detail</td></tr>
+          <tr><td class="mono">4</td><td>Adequate writing with some development and organizational structure</td></tr>
+          <tr><td class="mono">3</td><td>Partial development and limited clarity throughout</td></tr>
+          <tr><td class="mono">2</td><td>Minimal structure and weak reasoning; ideas underdeveloped</td></tr>
+          <tr><td class="mono">1</td><td>Very limited content and language control</td></tr>
+          <tr><td class="mono">0</td><td>Essay below 200-word minimum — scoring not performed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- 7. TRAINING -->
+  <section id="training">
+    <div class="section-heading">
+      <span class="section-num">7</span>
+      <h2>Model Training</h2>
+    </div>
+    <p>Each adapter is trained independently using QLoRA on its respective ASAP prompt category. The base model is never modified — only adapter weights are updated per prompt type.</p>
+
+    <table class="params-table">
+      <tr><td>Base model</td><td>meta-llama/Llama-3.1-8B-Instruct</td></tr>
+      <tr><td>Dataset</td><td>ASAP Automated Student Assessment Prize</td></tr>
+      <tr><td>Training method</td><td>QLoRA</td></tr>
+      <tr><td>Quantization</td><td>4-bit NF4</td></tr>
+      <tr><td>Precision</td><td>bfloat16</td></tr>
+      <tr><td>LoRA rank</td><td>16</td></tr>
+      <tr><td>LoRA alpha</td><td>16</td></tr>
+      <tr><td>Dropout</td><td>0.05</td></tr>
+      <tr><td>Target modules</td><td>q_proj, k_proj, v_proj, o_proj</td></tr>
+      <tr><td>Epochs</td><td>5</td></tr>
+      <tr><td>Per-device batch size</td><td>4</td></tr>
+      <tr><td>Gradient accumulation</td><td>4 steps (effective batch size: 16)</td></tr>
+      <tr><td>Learning rate</td><td>2e-4 with cosine decay</td></tr>
+      <tr><td>Max sequence length</td><td>1024 tokens</td></tr>
+    </table>
+  </section>
+
+
+  <!-- 8. INFERENCE -->
+  <section id="inference">
+    <div class="section-heading">
+      <span class="section-num">8</span>
+      <h2>Inference System</h2>
+    </div>
+    <p>vLLM's multi-LoRA serving loads the base model once and swaps adapter weights per request. Up to 8 adapters can be held in memory concurrently.</p>
+
+    <table class="params-table">
+      <tr><td>Runtime</td><td>vLLM 0.11.0</td></tr>
+      <tr><td>GPU</td><td>NVIDIA L4</td></tr>
+      <tr><td>GPU memory</td><td>24 GB</td></tr>
+      <tr><td>Max model length</td><td>4096 tokens</td></tr>
+      <tr><td>Concurrent LoRA adapters</td><td>8</td></tr>
+      <tr><td>Adapter selection</td><td>prompt_id routing at request time</td></tr>
+    </table>
+  </section>
+
+
+  <!-- 9. PERFORMANCE -->
+  <section id="performance">
+    <div class="section-heading">
+      <span class="section-num">9</span>
+      <h2>Evaluation &amp; Results</h2>
+    </div>
+    <p><strong>Quadratic Weighted Kappa (QWK)</strong> measures agreement between AI predictions and human scores, penalizing larger disagreements more heavily. It is the standard metric for automated scoring in educational testing. Results below reflect a system in active development.</p>
+
+    <div class="callout">
+      Average QWK across all prompts: <strong>0.633</strong> &nbsp;·&nbsp; Average adjacent agreement: <strong>87%</strong>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Prompt Type</th><th>QWK</th><th>MAE</th><th>Exact Match</th><th>Adj. Agreement</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Analytical</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:74%;"></div></div><span class="qwk-val">0.740</span></div></td>
+            <td class="mono">0.55</td><td class="mono">50%</td><td class="mono">95%</td><td></td>
+          </tr>
+          <tr>
+            <td>Persuasive</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:72.7%;"></div></div><span class="qwk-val">0.727</span></div></td>
+            <td class="mono">0.60</td><td class="mono">45%</td><td class="mono">95%</td><td></td>
+          </tr>
+          <tr>
+            <td>Compare / Contrast</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:70.5%;"></div></div><span class="qwk-val">0.705</span></div></td>
+            <td class="mono">0.75</td><td class="mono">40%</td><td class="mono">85%</td><td></td>
+          </tr>
+          <tr>
+            <td>Source Based</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:66.5%;"></div></div><span class="qwk-val">0.665</span></div></td>
+            <td class="mono">0.65</td><td class="mono">45%</td><td class="mono">90%</td><td></td>
+          </tr>
+          <tr>
+            <td>Informative</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:60.7%;"></div></div><span class="qwk-val">0.607</span></div></td>
+            <td class="mono">0.80</td><td class="mono">35%</td><td class="mono">85%</td><td></td>
+          </tr>
+          <tr>
+            <td>Narrative</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:57.1%;"></div></div><span class="qwk-val">0.571</span></div></td>
+            <td class="mono">0.85</td><td class="mono">30%</td><td class="mono">85%</td><td></td>
+          </tr>
+          <tr>
+            <td>Descriptive</td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:41.3%;background:#b91c1c;"></div></div><span class="qwk-val">0.413</span></div></td>
+            <td class="mono">1.05</td><td class="mono">20%</td><td class="mono">75%</td>
+            <td><span class="badge badge-warn">Retraining</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Average</strong></td>
+            <td><div class="qwk-cell"><div class="qwk-track"><div class="qwk-fill" style="width:63.3%;"></div></div><span class="qwk-val"><strong>0.633</strong></span></div></td>
+            <td class="mono"><strong>0.75</strong></td>
+            <td class="mono"><strong>38%</strong></td>
+            <td class="mono"><strong>87%</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-light);margin-top:8px;">QWK ranges from −1 to 1. Scores above 0.6 are generally considered acceptable for automated scoring in educational testing contexts. Prompt 6 is currently below this threshold and is flagged for adapter retraining.</p>
+  </section>
+
+
+  <!-- 10. API -->
+  <section id="api">
+    <div class="section-heading">
+      <span class="section-num">10</span>
+      <h2>API Reference</h2>
+    </div>
+    <p>Base URL: <code>https://deep-aes-platform.duckdns.org</code></p>
+
+    <div class="endpoint">
+      <div class="endpoint-head">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/health</span>
+        <span class="endpoint-desc">System status</span>
+      </div>
+      <div class="code-block" style="border:none;border-radius:0;margin:0;">
+        <div class="code-label">Response</div>
+        <pre>{ <span class="str">"status"</span>: <span class="str">"healthy"</span>, <span class="str">"engine"</span>: <span class="str">"loaded"</span>, <span class="str">"db"</span>: <span class="str">"connected"</span> }</pre>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-head">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/score</span>
+        <span class="endpoint-desc">Score an essay</span>
+      </div>
+      <div class="endpoint-body-split">
+        <div class="code-block" style="border:none;border-right:1px solid var(--border);border-radius:0;margin:0;">
+          <div class="code-label">Request</div>
+          <pre>{
+  <span class="str">"text"</span>:      <span class="str">"essay content..."</span>,
+  <span class="str">"prompt_id"</span>: <span class="num">1</span>,
+  <span class="str">"essay_id"</span>:  <span class="str">"optional_id"</span>
+}</pre>
+        </div>
+        <div class="code-block" style="border:none;border-radius:0;margin:0;">
+          <div class="code-label">Response</div>
+          <pre>{
+  <span class="str">"id"</span>:            <span class="str">"ESSAY_xxx"</span>,
+  <span class="str">"score"</span>:         <span class="num">4</span>,
+  <span class="str">"justification"</span>: <span class="str">"..."</span>,
+  <span class="str">"confidence"</span>:    <span class="num">0.91</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-head">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/api/history</span>
+        <span class="endpoint-desc">All scored essays, ordered by submission time</span>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-head">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/api/feedback</span>
+        <span class="endpoint-desc">Submit teacher review</span>
+      </div>
+      <div class="code-block" style="border:none;border-radius:0;margin:0;">
+        <div class="code-label">Request</div>
+        <pre>{
+  <span class="str">"essay_id"</span>:         <span class="str">"ESSAY_xxx"</span>,
+  <span class="str">"is_validated"</span>:     <span class="kw">true</span>,
+  <span class="str">"teacher_score"</span>:    <span class="num">4</span>,
+  <span class="str">"teacher_comments"</span>: <span class="str">"..."</span>
+}</pre>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- 11. INFRASTRUCTURE -->
+  <section id="infrastructure">
+    <div class="section-heading">
+      <span class="section-num">11</span>
+      <h2>Infrastructure</h2>
+    </div>
+
+    <div class="infra-grid">
+      <div class="infra-row"><div>Cloud provider</div><div>Google Cloud Platform</div></div>
+      <div class="infra-row"><div>Instance type</div><div>g2-standard-4</div></div>
+      <div class="infra-row"><div>GPU</div><div>NVIDIA L4 · 24 GB VRAM</div></div>
+      <div class="infra-row"><div>Operating system</div><div>Ubuntu 24</div></div>
+      <div class="infra-row"><div>Backend framework</div><div>FastAPI</div></div>
+      <div class="infra-row"><div>Inference runtime</div><div>vLLM 0.11.0</div></div>
+      <div class="infra-row"><div>Reverse proxy</div><div>Nginx</div></div>
+      <div class="infra-row"><div>Database</div><div>PostgreSQL 15</div></div>
+      <div class="infra-row"><div>Containerization</div><div>Docker</div></div>
+      <div class="infra-row"><div>Frontend hosting</div><div>GitHub Pages</div></div>
+      <div class="infra-row"><div>SSL</div><div>Certbot with DuckDNS</div></div>
+      <div class="infra-row"><div>Process manager</div><div>systemd</div></div>
+      <div class="infra-row"><div>Backups</div><div>Daily pg_dump</div></div>
+      <div class="infra-row"><div>CI/CD</div><div>GitHub Actions · ~2 min deploy</div></div>
+    </div>
+  </section>
+
+
+  <!-- 12. LIMITATIONS -->
+  <section id="bias">
+    <div class="section-heading">
+      <span class="section-num">12</span>
+      <h2>Known Limitations</h2>
+    </div>
+
+    <h3>Length Bias</h3>
+    <p>Longer essays may receive higher scores independent of quality. A 200-word minimum is enforced; submissions below this receive a score of 0 without inference.</p>
+
+    <h3>Vocabulary Bias</h3>
+    <p>Rare or sophisticated vocabulary can disproportionately influence predicted scores regardless of overall argument quality. This is a known artifact of training on the ASAP dataset.</p>
+
+    <h3>Prompt 6 Underperformance</h3>
+    <p>The Descriptive / Observational adapter (Prompt 6) achieves a QWK of 0.413, significantly below the system average of 0.633. This adapter is flagged for retraining. Confidence-based routing ensures these essays receive human review in the interim.</p>
+
+    <h3>Confidence Threshold</h3>
+    <p>Predictions with confidence below <strong>0.75</strong> are held for mandatory human review. This threshold is configurable in <code>config/default.yaml</code>.</p>
+  </section>
+
+
+  <!-- 13. LOCAL SETUP -->
+  <section id="local">
+    <div class="section-heading">
+      <span class="section-num">13</span>
+      <h2>Local Setup</h2>
+    </div>
+
+    <h3>1. Clone and create environment</h3>
+    <div class="code-block">
+      <div class="code-label">Shell</div>
+      <pre><span class="cmt"># Clone the repository</span>
+git clone https://github.com/623dks/aes-platform.git
+cd aes-platform
+
+<span class="cmt"># Create and activate environment</span>
+conda create -n aes-llama-310 python=3.10
+conda activate aes-llama-310
+
+<span class="cmt"># Install dependencies</span>
+pip install vllm fastapi uvicorn asyncpg groq PyPDF2 python-docx pyyaml</pre>
+    </div>
+
+    <h3>2. Start PostgreSQL</h3>
+    <div class="code-block">
+      <div class="code-label">Shell</div>
+      <pre>docker run -d \
+  --name aes_postgres \
+  -e POSTGRES_USER=aes_user \
+  -e POSTGRES_PASSWORD=aes_password \
+  -e POSTGRES_DB=aes_db \
+  -p 5432:5432 \
+  postgres:15</pre>
+    </div>
+
+    <h3>3. Start the API server</h3>
+    <div class="code-block">
+      <div class="code-label">Shell</div>
+      <pre>DATABASE_URL="postgresql://aes_user:aes_password@localhost:5432/aes_db" \
+GROQ_API_KEY="your_key_here" \
+uvicorn backend.main:app --host 0.0.0.0 --port 8000</pre>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="doc-footer">
+    <div class="footer-author">
+      <strong>Deep Shukla</strong><br>
+      University of Colorado Boulder<br>
+      <a href="mailto:deep.shukla@colorado.edu">deep.shukla@colorado.edu</a> &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/deep-shukla-b4035220a/" target="_blank">LinkedIn</a> &nbsp;·&nbsp;
+      <a href="https://github.com/623dks/aes-platform" target="_blank">GitHub</a>
+    </div>
+    <div class="footer-note">
+      DeepTest v1.0<br>
+      ASAP Dataset · Llama 3.1 8B<br>
+      Google Cloud · NVIDIA L4
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
