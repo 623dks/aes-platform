@@ -200,20 +200,7 @@ function logout() {
     window.location.href = 'home.html';
 }
 
-// ── File upload ──
-document.getElementById('essay-file').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    document.getElementById('file-name').textContent = file.name;
-    // For .txt, auto-fill textarea
-    if (file.name.endsWith('.txt')) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('essay-input').value = ev.target.result;
-        };
-        reader.readAsText(file);
-    }
-});
+
 
 // ── Grading ──
 const API_URL = 'https://deep-aes-platform.duckdns.org/api/score';  // ← change to your backend IP
